@@ -1,0 +1,18 @@
+DEF INTERNET
+A collection of interconnected networks is called an internetwork or internet. We will use these terms in a generic sense, in contrast to
+the global Internet (which is one specific internet), which we will always capitalize. The Internet connects content providers, access
+networks, enterprise networks, home networks, and many other networks to one another.
+    An internet entails the interconnection of distinct, independently operated networks. In our view, connecting a LAN and a WAN or 
+connecting two LANs is the usual way to form an internetwork.
+
+DEF GATEWAY
+The device that makes a connection between two or more networks and provides the necessary translation, both in terms of hardware and
+software, is a gateway. Gateways are distinguished by the layer at which they operate in the protocol hierarchy. We will have much more
+to say about layers and protocol hierarchies in the next section, but for now imagine that higher layers are more tied to applications,
+such as the Web, and lower layers are more tied to transmission links, such as Ethernet.
+    Because the benefit of forming an internet is to connect computers across networks, we do not want to use too low-level a gateway or
+we will be unable to make connections between different kinds of networks. We do not want to use too high-level a gateway either, or the
+connection will only work for particular applications.
+    The level in the middle that is ‘‘just right’’ is often called the network layer, and a router is a gateway that switches packets
+at the network layer. Generally speaking, an internetwork will be connected by network-layer gateways, or routers; however, even a single
+large network often contains many routers.

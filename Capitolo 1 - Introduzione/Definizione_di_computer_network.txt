@@ -6,6 +6,8 @@ Interconnection can take place over a variety of transmission media including co
 Networks come in many sizes, shapes, and forms, as we will explore throughout the book. 
 They are usually connected to make larger networks, with the Internet being the most well-known example of a network of networks.
 
+NB: dopo aggiunge questo dettaglio:  "collection of computers interconnected by a SINGLE TECNOLOGY"
+
 DIFFERENZE CON SISTEMI DISTRIBUITI
 There is considerable confusion in the literature between a computer network and a distributed system. The key distinction is that
 in a distributed system, a collection of independent computers appears to its users as a SINGLE COHEREN SYSTEM. Usually, it has a single
