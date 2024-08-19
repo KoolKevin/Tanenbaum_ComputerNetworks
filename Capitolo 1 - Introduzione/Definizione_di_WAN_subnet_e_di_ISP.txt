@@ -1,0 +1,26 @@
+
+DEF WAN e SUBNET
+A WAN (Wide Area Network) spans a large geographical area, often a country or continent. We will begin our discussion with wired
+WANs, using the example of a company with branch offices in different cities. 
+    We will follow traditional usage and call client  machines hosts. The rest of the network that connects these hosts is then
+called the communication SUBNET, or just subnet for short. The job of the subnet is to carry messages from host to host,
+just as the telephone system carries words from speaker to listener. In most WANs, the subnet consists of two 
+distinct components: transmission lines and switching elements (routers).
+    A short comment about the term ‘‘subnet’’ is in order here. Originally, its only meaning was the collection of routers
+and communication lines that moved packets from the source host to the destination host. Readers should be aware that it has
+acquired a second, more recent meaning in conjunction with network addressing.
+The WAN as we have described it looks similar to a large wired LAN, but there are some important differences:
+    - Usually in a WAN, the hosts and subnet are owned and operated by different people.
+    - A second difference is that the routers will usually connect different kinds of networking technology.
+    - A final difference is in what is connected to the subnet. WANs connect entire LANs
+
+Subnets, networks, and internetworks are often confused. The term ‘‘subnet’’ makes the most sense in the context of a WAN, where it refers
+to the collection of routers and communication lines owned by the network operator.
+
+DEF ISP
+In a WAN variant, the subnet may be run by a different company. In our example, The subnet operator is known as a network
+service provider and the offices are its customers. The subnet operator will connect to other customers too, as long as they can
+pay and it can provide service.
+    Since it would be a disappointing network service if the customers could only send packets to each other, the subnet operator will
+also connect to other networks that are part of the Internet. Such a subnet operator is called an ISP (Internet Service Provider) 
+and the subnet is an ISP Network. Its customers who connect to the ISP receive Internet service.

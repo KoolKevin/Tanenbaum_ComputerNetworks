@@ -4,6 +4,8 @@ the global Internet (which is one specific internet), which we will always capit
 networks, enterprise networks, home networks, and many other networks to one another.
     An internet entails the interconnection of distinct, independently operated networks. In our view, connecting a LAN and a WAN or 
 connecting two LANs is the usual way to form an internetwork.
+    The Internet uses ISP networks to connect enterprise networks, home networks, and many other networks. We will look at the
+Internet in great detail later in this book.
 
 DEF GATEWAY
 The device that makes a connection between two or more networks and provides the necessary translation, both in terms of hardware and

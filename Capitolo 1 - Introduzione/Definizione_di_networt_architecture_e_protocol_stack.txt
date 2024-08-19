@@ -1,0 +1,9 @@
+DEF NETWORK ARCHITECTURE
+A set of layers and protocols is called a Network Architecture. The specification of an architecture must contain enough information to allow an implementer to write the program or build
+the hardware for each layer so that it will correctly obey the appropriate protocol. Neither the details of the implementation
+nor the specification of the interfaces is part of the architecture because these are hidden away inside the machines 
+and not visible from the outside. 
+
+DEF PROTOCOL STACK
+A list of the protocols used by a certain system, one protocol per layer, is called a Protocol Stack. Network
+architectures, protocol stacks, and the protocols themselves are the principal subjects of this book.
