@@ -1,0 +1,22 @@
+The strength of the OSI reference model is the model itself (minus the presentation and session layers), which has proven
+to be exceptionally useful for discussing computer networks. In contrast, the strength of the TCP/IP reference model is
+the protocols, which have been widely used for many years. Since computer scientists like to have their cake and eat it, too, we
+will use an hybrid model as the framework for this book.
+
+This model has five layers, running from the physical layer up through the link, network and transport layers to the application
+layer.
+    - The physical layer specifies how to transmit bits across different kinds of media as electrical (or other analog) signals.
+    - The link layer is concerned with how to send finite-length messages between directly connected computers with specified
+      levels of reliability. Ethernet and 802.11 are examples of link layer protocols.
+      Broadcast networks have an issue in the data link layer: how to control access to the shared channel.
+      A special sublayer of the data link layer, the medium access control sublayer, deals with this problem.
+    - The network layer deals with how to combine multiple links into networks, and networks of networks, into internetworks
+      so that we can send packets between distant computers. This includes the task of finding the path along which to send
+      the packets. IP is the main example protocol we will study for this layer.
+    - The transport layer strengthens the delivery guarantees of the Network layer, usually with increased reliability, and
+      provide delivery abstractions, such as a reliable byte stream, that match the needs of different applications.
+      TCP is an important example of a transport layer protocol.
+    - Finally, the application layer contains programs that make use of the network. Many, but not all, networked applications
+      have user interfaces, such as a Web browser. Our concern, however, is with the portion of the program that uses the
+      network. This is the HTTP protocol in the case of the Web browser. There are also important support programs in the
+      application layer, such as the DNS, that are used by many applications. These form the glue that makes the network function.

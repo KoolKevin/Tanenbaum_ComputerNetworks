@@ -1,0 +1,11 @@
+Q1) The performance of a client-server system is strongly influenced by two major network characteristics:
+- the bandwidth of the network (that is, how many bits/sec it can transport)
+- the latency (that is, how many seconds it takes for the first bit to get from the client to the server).
+Give an example of a network that exhibits high bandwidth but also high latency.
+    -> Internet satellitare
+Then give an example of one that has both low bandwidth and low latency
+    -> Vecchie wired-ethernet LANs (10Mbps)
+
+Q2) Besides bandwidth and latency, what other parameter is needed to give a good characterization of the quality of service
+offered by a network used for (i) digitized voice traffic? (ii) video traffic? (iii) financial transaction traffic?
+    -> reliability

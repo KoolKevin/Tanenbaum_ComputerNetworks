@@ -1,0 +1,36 @@
+CONNECTION-ORIENTED/CONNECTION-LESS SERVICES
+Layers can offer two different types of service to the layers above them: connection-oriented and connectionless. 
+Connection-oriented service is modeled after the telephone system. To talk to someone, you pick up the phone, dial the number,
+talk, and then hang up. Similarly, to use a connection-oriented network service, the service user first establishes a connection,
+uses the connection, and then releases the connection. The essential aspect of a connection is that it acts like a tube: the sender pushes objects
+(bits) in at one end, and the receiver takes them out at the other end.  In most cases the order is preserved so that the bits
+arrive in the order they were sent. A circuit is another name for a connection with associated resources, such as a fixed bandwidth.
+    In contrast to connection-oriented service, connectionless service is modeled after the postal system. Each message (letter)
+carries the full destination address, and each one is routed through the intermediate nodes inside the system independent
+of all the subsequent messages. Normally, when two messages are sent to the same destination, the first one sent will be the first
+one to arrive. However, it is possible that the first one sent can be delayed so that the second one arrives first (no ordine).
+
+RELIABILTY
+Each kind of service can further be characterized by its reliability. Some services are reliable in the sense that they 
+NEVER LOSE DATA. Usually, a reliable service is implemented by having the receiver acknowledge the receipt of each message
+so the sender is sure that it arrived. The acknowledgement process introduces overhead and delays, which are often worth it
+but are sometimes undesirable.
+
+esempi:
+
+                            |            SERVICE             |          EXAMPLE         |  
+                            |    Reliable message stream     |      Sequence of pages   | 
+    Connection-oriented     |    Reliable byte stream        |      Movie download      |
+                            |    Unreliable connection       |      Voice over IP       |
+ -----------------------------------------------------------------------------------------------------------                                       
+                            |    Unreliable datagram         |      Spam mail           |
+    Connection-less         |    Acknowledged datagram       |      Text messaging      |
+                            |    Request-reply               |      Database query      |
+
+
+
+
+
+
+
+
