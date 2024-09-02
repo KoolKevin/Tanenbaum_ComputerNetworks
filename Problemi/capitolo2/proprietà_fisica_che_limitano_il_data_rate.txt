@@ -1,0 +1,40 @@
+Q1) Identify three physical properties that limit the maximum data rate of digital communication channels used in practice.
+
+In digital communication channels, the maximum data rate is fundamentally constrained by three key physical properties:
+    - bandwidth,
+    - signal-to-noise ratio (SNR),
+    - propagation delay and attenuation.
+Here’s how each of these factors limits data transmission:
+
+1) Bandwidth
+Bandwidth refers to the range of frequencies that a communication channel can support. It is typically measured in Hertz (Hz).
+According to the NYQUIST THEOREM, for a noiseless channel, the maximum data rate (in bits per second) is directly proportional
+to the bandwidth of the channel. Specifically, the maximum data rate 𝑅_max is given by:
+ 
+    𝑅_max = 2*Bandwidth*log_2(𝑀); Where 𝑀 is the number of discrete signal levels used.
+
+In practice, however, all real-world channels have some noise, which limits the practical data rate to less than the theoretical
+maximum. A higher bandwidth allows more data to be transmitted per unit time, but this is limited by the physical medium's
+ability to carry higher frequencies and by regulations.
+
+2) Signal-to-Noise Ratio (SNR)
+The Signal-to-Noise Ratio (SNR) is the ratio of the power of the signal to the power of the background noise. It is often expressed
+in decibels (dB). According to SHANNON'S CAPACITY THEOREM, the maximum data rate 𝐶 of a channel, which is also known as the channel 
+capacity, is given by:
+
+    𝐶 = Bandwidth*log_2(1 + S/N); Where S/N is the signal-to-noise ratio.
+
+Higher SNR allows for a higher data rate because the signal can be more easily distinguished from noise. In practical terms,
+as noise increases, more sophisticated (and slower) error-correcting codes may be required to ensure accurate data transmission,
+effectively reducing the usable data rate.
+
+3) Propagation Delay and Attenuation
+The real world channel capacity encompasses several factors, including propagation delay and attenuation, which can also limit
+the data rate.
+    - Propagation delay is the time it takes for a signal to travel from the sender to the receiver. If the delay is significant,
+      it can lead to longer waiting times for acknowledgments in certain protocols, reducing the overall throughput.
+    - Attenuation refers to the loss of signal strength as it propagates through the medium. Over long distances,
+      signals can become weaker, which requires either amplification or retransmission, both of which introduce delays
+      and potential errors, reducing the effective data rate.
+In high-speed digital communications, managing these aspects becomes critical because they directly influence how fast data
+can be reliably transmitted and received.

@@ -1,0 +1,37 @@
+Q1) Compare the delay in sending an x-bit message over a k-hop path in a circuit-switched network and in a (lightly loaded)
+packet-switched network. 
+    - The circuit setup time is (s) sec,
+    - the propagation delay is (d) sec per hop,
+    - the packet size is (p) bits,
+    - and the data rate is (b) bps.
+Under what conditions does the packet network have a lower delay?
+Also, explain the conditions under which a packet-switched network is preferable to a circuit-switched network. 
+
+1) Circuit-Switched Network:
+In a circuit-switched network, the delay can be broken down into three components:
+    - Circuit Setup Time (𝑠): Before data transmission can begin, a dedicated circuit must be established across the 𝑘 hops.
+    - Transmission Delay: Once the circuit is established, the entire 𝑥-bit message is sent at the data rate 𝑏.
+    - Propagation Delay: As the message traverses each hop, it experiences a propagation delay of 𝑑 seconds per hop.
+Thus, the total delay 𝐷_circuit in a circuit-switched network is:
+
+    𝐷_circuit = 𝑠 + x/b + d*k; con (k) numero di hop
+
+2) Packet-Switched Network:
+In a packet-switched network, the message (x bits) is divided into packets, each of size 𝑝 bits. The delay for each packet includes
+the transmission delay for that packet and the propagation delay for each hop.
+    - Number of Packets: The message is divided into 𝑛 packets, where 𝑛 = 𝑥/𝑝.
+The total delay 𝐷_packet​ for the packet-switched network can be approximated by considering the transmission and propagation delay
+for the first packet plus the time it takes to send the remaining packets:
+
+    𝐷_packet = 𝑘*(𝑝/𝑏 + 𝑑) + (𝑛−1)*𝑝/𝑏
+​
+To determine under what conditions the packet-switched network has a lower delay, we compare the two delays:
+    
+    𝐷_circuit > 𝐷_packet    ->     s > b/p*(k−1)
+
+This inequality shows that the packet-switched network will have a lower delay if the circuit setup time 𝑠 is greater than 𝑝/b*(𝑘−1).
+This condition indicates that for a packet-switched network to be preferable in terms of delay, the overhead of setting up a
+dedicated circuit must be significant compared to the per-packet transmission time over multiple hops.
+
+
+​

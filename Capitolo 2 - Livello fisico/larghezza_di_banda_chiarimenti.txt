@@ -1,0 +1,6 @@
+There is much confusion about bandwidth because it means different things to electrical engineers and to computer scientists.
+To electrical engineers, (analog) bandwidth is a quantity measured in Hz. To computer scientists, (digital) bandwidth
+is the maximum DATA RATE of a channel, a quantity measured in bits/sec.
+
+That data rate is the end result of using the analog bandwidth of a physical channel for digital transmission, and the two
+are related, as we discuss next.
