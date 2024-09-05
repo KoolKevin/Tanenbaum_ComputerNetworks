@@ -1,0 +1,30 @@
+We saw in Chap. 2 that communication channels have a range of characteristics. Some channels, like optical fiber, have tiny error
+rates so that transmission errors are a rare occurrence. But other channels, especially wireless links and aging local loops,
+have error rates that are orders of magnitude larger. For these links, transmission errors are the norm. They cannot be avoided
+at a reasonable expense or cost in terms of performance. The conclusion is that transmission errors are here to stay. We have to
+learn how to deal with them.
+
+Network designers have developed two basic strategies for dealing with errors. Both add redundant information to the data that
+is sent. One strategy is to include enough redundant information to enable the receiver to be able to deduce what the transmitted
+data must have been. The other is to include only enough redundancy to allow the receiver to deduce that an error has occurred
+(but not which error) and have it request a retransmission. The former strategy uses error-correcting codes and the latter uses
+error-detecting codes (The use of error-correcting codes is often referred to as FEC (Forward Error Correction)). Each of these
+techniques occupies a different ecological niche.
+
+On channels that are highly reliable, such as fiber, it is cheaper to use an error-detecting code and just retransmit the occasional
+block found to be faulty. However, on channels such as wireless links that make many errors, it is better to add redundancy to each
+block so that the receiver is able to figure out what the originally transmitted block was. FEC is used on noisy channels because
+retransmissions are just as likely to be in error as the first transmission.
+
+A key consideration for these codes is the type of errors that are likely to occur. Neither error-correcting codes nor
+error-detecting codes can handle all possible errors since the redundant bits that offer protection are as likely to be received in
+error as the data bits (which can compromise their protection). It would be nice if the channel treated redundant bits differently
+than data bits, but it does not. They are all just bits to the channel. This means that to avoid undetected errors the code must
+be strong enough to handle the expected errors.
+
+One model is that errors are caused by extreme values of thermal noise that overwhelm the signal briefly and occasionally,
+giving rise to isolated single-bit errors. Another model is that errors tend to come in bursts rather than singly.
+This model follows from the physical processes that generate them—such as a deep fade on a wireless channel or transient electrical
+interference on a wired channel. Both models matter in practice, and they have different trade-offs.
+
+// SKIP DEI SPECIFICI ERROR CORRECTION E DETECTION CODES

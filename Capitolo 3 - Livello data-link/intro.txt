@@ -1,0 +1,23 @@
+In this chapter, we will study the design principles for the second layer in our model, the data link layer. This study deals with
+algorithms for achieving reliable, efficient communication of whole units of information called frames (rather than individual
+bits, as in the physical layer) between two adjacent machines. By adjacent, we mean that the two machines are connected by
+a communication channel that acts conceptually like a wire (e.g., a coaxial cable, telephone line, or wireless channel).
+The essential property of a channel that makes it ‘‘wire-like’’ is that the bits are delivered in exactly the same order in which
+they are sent.
+
+At first you might think this problem is so trivial that there is nothing to study, machine A just puts the bits on the wire,
+and machine B just takes them off. Unfortunately, communication channels make errors occasionally. Furthermore, they have only
+a finite data rate, and there is a nonzero propagation delay between the time a bit is sent and the time it is received.
+These limitations have important implications for the efficiency of the data transfer. The protocols used for communications
+must take all of these factors into consideration. These protocols are the subject of this chapter. 
+
+The data link layer uses the services of the physical layer below it to send and receive bits over (possibly unreliable)
+communication channels that may lose data (a causa di rumore, distorsione, attenuazioni, collisioni, ecc.). It has a number of
+functions, including:
+    1. Providing a well-defined service interface to the network layer
+    2. Framing sequences of bytes as self-contained segments.
+    3. Detecting and correcting transmission errors.
+    4. Regulating the flow of data so that slow receivers are not swamped by fast senders.
+To accomplish these goals, the data link layer takes the packets it gets from the network layer and encapsulates them into FRAMES
+for transmission. Each frame contains a frame header, a payload field for holding the packet, and a frame trailer.
+Frame management forms the heart of what the data link layer does.

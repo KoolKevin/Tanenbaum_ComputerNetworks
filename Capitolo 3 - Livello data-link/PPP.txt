@@ -1,0 +1,7 @@
+Within a single building, LANs are widely used for interconnection, but most wide area network infrastructure is built up from
+point-to-point lines. In Chap. 4, we will look at LANs. Here we will examine the data link protocols found on point-to-point
+lines in the Internet in three common situations. The first situation is when packets are sent over SONET optical fiber links in
+wide area networks. These links are widely used, for example, to connect routers in the different locations of an ISP’s network.
+The second situation is for ADSL links running on the local loop of the telephone network at the edge of the Internet. The third
+situation is for DOCSIS links in the local loop of a cable network. Both ADSL and DOCSIS connect millions of individuals and 
+businesses to the Internet.

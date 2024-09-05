@@ -1,0 +1,163 @@
+--- SERVICES PROVIDED TO THE NETWORK LAYER
+The function of the data link layer is to provide services to the network layer. The principal service of the link layer
+is transferring data from the network layer on the SOURCE machine to the network layer on the DESTINATION machine.
+
+On the source machine there's an entity, call it a process, in the network layer that passes packets to the data link layer
+for transmission to the destination. The job of the data link layer is to transmit the data to the destination machine so they
+can be handed over to the network layer there. The actual transmission follows the path throught the Physical layer, but it is
+easier to think in terms of two data link layer processes communicating using a data link protocol.
+
+The data link layer can be designed to offer various services. The actual services that are offered vary from protocol to protocol.
+Three reasonable possibilities that we will consider in turn are:
+    1. Unacknowledged connectionless service.
+        Unacknowledged connectionless service consists of having the source machine send independent frames to the destination
+        machine without having the destination machine acknowledge them. Ethernet is a good example of a data link layer that
+        provides this class of service. No logical connection is established beforehand or released afterward. If a frame is
+        lost due to noise on the line, no attempt is made to detect the loss or recover from it in the data link layer.
+        This class of service is appropriate when the error rate is very low, so recovery is left to higher layers. It is
+        also appropriate for real-time traffic, such as voice or video, in which late data is worse than bad data
+    2. Acknowledged connectionless service.
+        The next step up in terms of reliability is acknowledged connectionless service. When this service is offered,
+        there are still no logical connections used, but each frame sent is individually acknowledged. In this way, the sender
+        knows whether a frame has arrived correctly or been lost. If it has not arrived within a specified time interval, it can
+        be sent again. This service is useful over unreliable channels, such as wireless systems. 802.11 (WiFi) is a good example
+        of this type of link layer service.
+    3. Acknowledged connection-oriented service.
+        With this service, the source and destination machines establish a connection before any data are transferred.
+        Each frame sent over the connection is numbered, and the data link layer guarantees that each frame sent is indeed received.
+        Furthermore, it guarantees that each frame is received exactly once and that all frames are received in the right order.
+        Connection-oriented service thus provides the network layer processes with the equivalent of a RELIABLE BIT STREAM.
+        It is appropriate over long, unreliable links such as a satellite channel or a long-distance telephone circuit.
+        If acknowledged connectionless service were used, it is conceivable that lost acknowledgements could cause a frame to be
+        sent and received several times, wasting bandwidth.
+
+When connection-oriented service is used, transfers go through three distinct phases. In the first phase, the connection is
+established by having both sides initialize variables and counters needed to keep track of which frames have been received and
+which ones have not. In the second phase, one or more frames are actually transmitted. In the third and final phase, the connection
+is released, freeing up the variables, buffers, and other resources used to maintain the connection. 
+
+--- FRAMING
+To provide service to the network layer, the data link layer must use the service provided to it by the physical layer.
+The physical layer accepts a RAW BIT STREAM and attempts to deliver it to the destination. If the channel is noisy, as it is
+for most wireless and some wired links, the physical layer will add some REDUNDANCY to its signals to reduce the bit error rate
+to a tolerable level. However, the bit stream received by the data link layer is not guaranteed to be error-free. Some bits may
+have different values, and the number of bits received may be less than, equal to, or more than the number of bits transmitted.
+It is up to the data link layer to detect and, if necessary, correct errors.
+
+The usual approach is for the data link layer to break up the bit stream into discrete frames, compute a short token called
+a CHECKSUM for each frame, and include the checksum in the frame when it is transmitted. When a frame arrives at the destination,
+the receiver recomputes the checksum based on the received frame. If the newly computed checksum is different from the one 
+contained in the frame, the data link layer knows that an error has occurred and takes steps to deal with it (e.g., discarding
+the bad frame and possibly also sending back an error report).
+
+Breaking up the bit stream into frames is more difficult than it at first appears. A good design must make it easy for a
+receiver to find the start of new frames while using little of the channel bandwidth. We will look at four methods:
+    1. Byte count.
+        The first framing method uses a field in the header to specify the number of bytes in the frame. When the data link layer
+        at the destination sees the byte count, it knows how many bytes follow and hence where the end of the frame is.
+
+        The trouble with this algorithm is that the count can be garbled by a transmission error. For example, if the byte count
+        of 5 in the second frame of Fig. 3-3(b) becomes a 7 due to a single bit flip, the destination will get out
+        of synchronization. It will then be unable to locate the correct start of the next frame. Even if the checksum is
+        incorrect so the destination knows that the frame is bad, it still has no way of telling where the next frame starts.
+        Sending a frame back to the source asking for a retransmission does not help either, since the DESTINATION does not know
+        how many bytes to skip over to get to the start of the retransmission. For this reason, the byte count method is rarely
+        used by itself. 
+    2. Flag bytes with byte stuffing.
+        The second framing method gets around the problem of resynchronization after an error by having each frame start and end
+        with special bytes. Often the same byte, called a FLAG byte, is used as both the starting and ending delimiter. 
+        Two consecutive flag bytes indicate the end of one frame and the start of the next. Thus, if the receiver ever loses
+        synchronization, it can just search for two flag bytes to find the end of the current frame and the start of the next frame.
+
+        However, there is a still a problem left. It may happen that the flag byte occurs in the data, especially when binary
+        data such as photos or songs are being transmitted. This situation would interfere with the framing. One way to solve this
+        problem is to have the sender’s data link layer insert a special escape byte (ESC) just before each ‘‘accidental’’ flag 
+        byte in the data. Thus, a framing flag byte can be distinguished from one in the data by the absence or presence of an
+        escape byte before it. The data link layer on the receiving end removes the escape bytes before giving the data to the
+        network layer. This technique is called BYTE STUFFING.
+
+        Of course, the next question is: what happens if an escape byte occurs in the middle of the data? The answer is that
+        it, too, is stuffed with an escape byte. At the receiver, the first escape byte is removed, leaving the data byte that
+        follows it (which might be another escape byte or the flag byte). 
+    3. Flag bits with bit stuffing.
+        The third method of delimiting the bit stream gets around a disadvantage of byte stuffing, which is that it is tied
+        to the use of 8-bit bytes. Framing can be also be done at the bit level, so frames can contain an arbitrary number
+        of bits made up of units of any size. Each frame begins and ends with a special bit pattern, 01111110 or 0x7E in
+        hexadecimal. This pattern is a flag byte. Whenever the sender’s data link layer encounters five consecutive 1s in the data,
+        it automatically stuffs a 0 bit into the outgoing bit stream (in questo modo 01111110 non può esserci nei dati). This bit
+        stuffing is analogous to byte stuffing, in which an escape byte is stuffed into the outgoing character stream before
+        a flag byte in the data. It also ensures a minimum density of transitions that help the physical layer maintain
+        synchronization (se sono sempre a 1 è difficile mantenere il clock). USB (Universal Serial Bus) uses bit stuffing for this
+        reason.
+
+        When the receiver sees five consecutive incoming 1 bits, followed by a 0 bit, it automatically destuffs (i.e., deletes)
+        the 0 bit. Just as byte stuffing is completely transparent to the network layer in both computers, so is bit stuffing.
+        If the user data contain the flag pattern, 01111110, this flag is transmitted as 011111010 but stored in the receiver’s
+        memory as 01111110. The upper layers are completely unaware that bit stuffing is being used.
+
+        With bit stuffing, the boundary between two frames can be unambiguously recognized by the flag pattern. Thus, if the
+        receiver loses track of where it is, all it has to do is scan the input for flag sequences, since they can only occur
+        at frame boundaries and never within the data.
+
+        With both bit and byte stuffing, a side effect is that the length of a frame now depends on the contents of the data
+        it carries.
+    4. Physical layer coding violations.
+        The last method of framing is to use a shortcut from the physical layer. We saw in Chap. 2 that the encoding of bits
+        as signals often includes redundancy to help the receiver. This redundancy means that some signals will not occur in
+        regular data. For example, in the 4B/5B line code, 4 data bits are mapped to 5 signal bits to ensure sufficient bit
+        transitions. This means that 16 out of the 32 signal possibilities are not used. We can use some reserved signals to 
+        indicate the start and end of frames. In effect, we are using ‘‘coding violations’’ (invalid characters) to delimit
+        frames. The beauty of this scheme is that because they are reserved signals, it is easy to find the start and end of
+        frames and there is NO NEED TO STUFF the data.
+
+Many data link protocols use a combination of these methods for safety. A common pattern used for Ethernet and 802.11 is to have
+a frame begin with a well-defined pattern called a preamble. This pattern might be quite long (72 bits is typical for 802.11) to
+allow the receiver to prepare for an incoming packet (i.e. flag). The preamble is then followed by a length (i.e., count) field
+in the header that is used to locate the end of the frame.
+
+--- ERROR CONTROL
+Having solved the problem of marking the start and end of each frame, we come to the next problem: how to make sure all frames
+are eventually delivered to the network layer at the destination and in the proper order. Assume for the moment that the receiver
+can tell whether a frame that it receives contains correct or faulty information.
+
+For unacknowledged connectionless service, it might be fine if the sender just kept outputting frames without regard to whether
+they were arriving properly. But for reliable, connection-oriented service it would not be fine at all. The usual way to ensure
+reliable delivery is to provide the sender with some feedback about what is happening at the other end of the line. Typically, the
+protocol calls for the receiver to send back special control frames bearing positive or negative acknowledgements about
+the incoming frames. If the sender receives a positive acknowledgement about a frame, it knows the frame has arrived safely.
+On the other hand, a negative acknowledgement means that something has gone wrong and the frame must be transmitted again.
+
+An additional complication comes from the possibility that hardware troubles may cause a frame to vanish completely (e.g., in
+a noise burst). In this case, the receiver will not react at all, since it has no reason to react. Similarly, if the acknowledgement
+frame is lost, the sender will not know how to proceed. It should be clear that a protocol in which the sender transmits a frame
+and then waits for an acknowledgement, positive or negative, will hang forever if a frame is ever lost due to, for example,
+malfunctioning hardware or a faulty communication channel. This possibility is dealt with by introducing timers into the data
+link layer.
+
+When the sender transmits a frame, it generally also starts a timer. The timer is set to expire after an interval long enough
+for the frame to reach the destination, be processed there, and have the acknowledgement propagate back to the sender. Normally,
+the frame will be correctly received and the acknowledgement will get back before the timer runs out, in which case the timer will
+be canceled. However, if either the original frame or the acknowledgement is lost, the timer will go off, alerting the sender
+to a potential problem. The obvious solution is to just transmit the frame again. However, when frames may be transmitted multiple
+times there is a danger that the receiver will accept the same frame two or more times and pass it to the network layer more
+than once. To prevent this from happening, it is necessary to assign sequence numbers to outgoing frames, so that the receiver can
+distinguish retransmissions from originals.
+
+The whole issue of managing the timers and sequence numbers so as to ensure that each frame is ultimately passed to the network
+layer at the destination exactly once, no more and no less, is an important part of the duties of the data link layer (and higher
+layers).
+
+--- FLOW CONTROL
+Another important design issue that occurs in the data link layer (and higher layers as well) is what to do with a sender that
+systematically wants to transmit frames faster than the receiver can accept them. This situation can occur when the sender is 
+running on a fast, powerful computer and the receiver is running on a slow, low-end machine. A common situation is when a 
+smartphone requests a Web page from a far more powerful server, which then turns on the fire hose and blasts the data at the poor
+helpless phone until it is completely swamped. Even if the transmission is error free, the receiver may be unable to handle the
+frames as fast as they arrive and will lose some. Clearly, something has to be done to prevent this situation. Two approaches
+are commonly used. 
+
+In the first one, feedback-based flow control, the receiver sends back information to the sender giving it permission to send
+more data, or at least telling the sender how the receiver is doing.
+
+In the second one, rate-based flow control, the protocol has a built-in mechanism that limits the rate at which senders may
+transmit data, without using feedback from the receiver.

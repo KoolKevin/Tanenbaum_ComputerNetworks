@@ -1,0 +1,118 @@
+The link layer can be more efficient if it can send MULTIPLE frames simultaneously BEFORE receiving an acknowledgement.
+
+The essence of all sliding window protocols is that at any instant of time, the sender maintains a SET OF SEQUENCE NUMBERS
+corresponding to FRAMES it is permitted TO SEND. These frames are said to fall within the SENDING WINDOW. Similarly, the
+receiver also maintains a RECEIVING WINDOW corresponding to the set of frames it is permitted to accept. The sender’s window
+and the receiver’s window need not have the same lower and upper limits or even have the same size. In some protocols, they are
+fixed in size, but in others they can grow or shrink over the course of time as frames are sent and received.
+
+    Although these protocols give the data link layer more freedom about the order in which it may send and receive frames, we
+    have definitely not dropped the requirement that the protocol must deliver packets to the destination network layer in the
+    SAME ORDER they were passed to the data link layer on the sending machine. Nor have we changed the requirement that the
+    physical communication channel is ‘‘wire-like,’’ that is, it must deliver all frames in the order sent.
+
+The SEQUENCE NUMBERS within the SENDER'S window represent frames that have been sent or can be sent but are as yet NOT ACKNOWLEDGED.
+Whenever a new packet arrives from the network layer, it is given the next highest sequence number, and the upper edge of the
+window is advanced by one. When an acknowledgement whose sequence number is equal to the lower edge of the window comes in, the
+lower edge is advanced by one. In this way, the window continuously maintains a list of unacknowledged frames.
+(Posso anche salvare tutte le posizioni successive alla prima già ack-ed in modo tale che quando arriva un ack con seq uguale alla
+prima posizione della finestra, posso shiftare la finestra fino alla prima posizione non ack-ed. In questo modo non devo rispedire
+uno ad uno tutti i frame per ricevere di nuovo gli ack).
+
+    Since frames currently within the sender’s window may ultimately be lost or damaged in transit, the sender must keep all
+    of these frames in its memory for possible retransmission. Thus, if the maximum window size is n, the sender needs n buffers
+    to hold the unacknowledged frames. If the window ever grows to its maximum size, the sending data link layer must forcibly
+    shut off the network layer until another buffer becomes free.
+
+The RECEIVING data link layer’s WINDOW corresponds to the FRAMES IT MAY ACCEPT. Any frame falling within the window is put in the
+receiver’s buffer. When a frame whose sequence number is equal to the lower edge of the window is received, it is passed to the
+network layer and the window is shifted by one. Any frame falling outside the window is discarded. In all of these cases, a
+subsequent acknowledgement is generated so that the sender may work out how to proceed.
+
+    Note that a window size of 1 means that the data link layer only accepts frames in order, but for larger windows this is not
+    so. The network layer, in contrast, is always fed data in the proper order, regardless of the data link layer’s window size.
+
+--- EXAMPLES OF FULL-DUPLEX SLIDING WINDOW PROTOCOLS
+
+1) One-Bit Sliding Window
+Such a protocol uses stop-and-wait since the sender transmits a frame and waits for its acknowledgement before sending the next one.
+
+Until now we have made the tacit assumption that the transmission time required for a frame to arrive at the receiver plus the
+transmission time for the acknowledgement to come back is negligible. Sometimes this assumption is clearly false.
+
+In these situations, the long round-trip time has important implications for the EFFICIENCY of the bandwidth utilization. As an
+example, consider a 50-kbps satellite channel with a 500-msec round-trip propagation delay. Imagine trying to use protocol 4 to
+send 1000-bit frames via the satellite. At t = 0 the sender starts sending the first frame. At t = 20 msec the frame has been
+completely sent. Not until t = 270 msec has the frame fully arrived at the receiver, and not until t = 520 msec has the
+acknowledgement arrived at the sender, under the best of circumstances (no waiting in the receiver and a short ack frame).
+This means that the sender was blocked 500/520 or 96% of the time. In other words, only 4% of the available bandwidth was used.
+    -> Clearly, the combination of a long transit time, high bandwidth, and short frame length is disastrous in terms of efficiency.
+
+The problem described here can be viewed as a consequence of the rule requiring a sender to wait for an acknowledgement before
+sending another frame. If we relax that restriction, much better efficiency can be achieved. Basically, the solution lies in
+allowing the sender to transmit up to 'W' frames before blocking, instead of just 1. With a large enough choice of 'W' the sender
+will be able to continuously transmit frames since the acknowledgements will arrive for previous frames before the window becomes
+full, preventing the sender from blocking.
+
+To find an appropriate value for 'W' we need to know how many frames can fit inside the channel as they propagate from sender to
+receiver. This capacity is determined by the bandwidth in bits/sec multiplied by the one-way transit time, or the bandwidth-delay
+product of the link. We can divide this quantity by the number of bits in a frame to express it as a number of frames. Call this
+quantity 'BD'. Then 'W' should be set to '2BD + 1'.
+    -> Twice the bandwidth-delay is the number of frames that can be outstanding if the sender continuously sends frames when the
+    roundtrip time to receive an acknowledgement is considered. (il doppio perchè viene considerato il tempo di roundtrip)
+    -> The ‘‘+1’’ is because an acknowledgement frame will not be sent until after a complete frame is received.
+
+RIASSUMENDO:
+    - BD copre i dati in volo durante il tempo di andata (forward delay).
+    - Un altro BD copre il tempo di ritorno (per gli ACK).
+    - Il "+1" è necessario per iniziare la trasmissione del nuovo frame subito dopo aver ricevuto l'ACK del frame precedente.
+    
+For the example link with a bandwidth of 50 kbps and a one-way transit time of 250 msec, the bandwidth-delay product is 12.5 kbit
+or 12.5 frames of 1000 bits each. 2BD + 1 is then 26 frames. Assume the sender begins sending frame 0 as before and sends a new
+frame every 20 msec. By the time it has finished sending 26 frames, at t = 520 msec, the acknowledgement for frame 0 will have
+just arrived. Thereafter, acknowledgements will arrive every 20 msec, so the sender will always get permission to continue just
+when it needs it. From then onwards, 25 or 26 unacknowledged frames will always be outstanding. Put in other terms, the sender’s
+maximum window size is 26.
+
+For smaller window sizes, the utilization of the link will be less than 100% since the sender will be blocked sometimes. We can
+write the utilization as the fraction of time that the sender is not blocked:
+
+    link_utilization <= W / (1+2BD)
+
+The value above is an upper bound because it does not allow for any frame processing time and treats the acknowledgement frame as
+having zero length, since it is usually short. The equation shows the need for having a large window 'W' whenever the bandwidth-delay
+product is large. If the delay is high, the sender will rapidly exhaust its window even for a moderate bandwidth, as in the
+satellite example. If the bandwidth is high, even for a moderate delay the sender will exhaust its window quickly unless it has a
+large window (e.g., a 1-Gbps link with 1-msec delay holds 1 megabit). With stop-and-wait for which W=1, if there is even one frame’s
+worth of propagation delay the efficiency will be less than 50%.
+
+This technique of keeping multiple frames in flight is an example of PIPELINING. Pipelining frames over an unreliable communication
+channel raises some serious issues. First, what happens if a frame in the middle of a long stream is damaged or lost? Large numbers
+of succeeding frames will arrive at the receiver before the sender even finds out that anything is wrong. When a damaged frame 
+arrives at the receiver, it obviously should be discarded, but what should the receiver do with all the correct frames following it?
+    -> Remember that the receiving data link layer is obligated to hand packets to the network layer IN SEQUENCE.
+
+Two basic approaches are available for dealing with errors in the presence of pipelining:
+
+2) Go-Back-N
+One option, called go-back-n, is for the receiver to just discard all subsequent frames, sending no acknowledgements for the
+discarded frames. This strategy corresponds to a receive window of size 1. In other words, the data link layer refuses to accept
+any frame except the next one it must give to the network layer. If the sender’s window fills up before the timer runs out,
+the pipeline will begin to empty. Eventually, the sender will time out and retransmit ALL UNACKNOWLEDGED FRAMES IN ORDER, starting
+with the damaged or lost one. This approach can WASTE a lot of bandwidth if the error rate is high.
+
+3) Selective Repeat
+The go-back-n protocol works well if errors are rare, but if the line is poor it wastes a lot of bandwidth on retransmitted frames.
+An alternative strategy, the selective repeat protocol, is to allow the receiver to accept and BUFFER correct frames received
+FOLLOWING a damaged or lost one. When it is used, a bad frame that is received is discarded, but any good frames received after
+it are accepted and buffered. When the sender times out, only the OLDEST UNACKNOWLEDGED frame is retransmitted. . If that frame
+arrives correctly, the receiver can deliver to the network layer, IN SEQUENCE, all the frames it has buffered. Selective repeat
+corresponds to a receiver window larger than 1.
+    -> This approach can require large amounts of data link layer memory if the window is large.
+
+Selective repeat is often combined with having the receiver send a negative acknowledgement (NAK) when it detects an error, for
+example, when it receives a checksum error or a frame out of sequence. NAKs stimulate retransmission before the corresponding timer
+expires and thus improve performance. 
+
+NB: (2) e (3) are alternative approaches between efficient use of bandwidth and data link layer buffer space. Depending on which
+resource is scarcer, one or the other can be used.
