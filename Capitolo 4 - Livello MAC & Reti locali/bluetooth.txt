@@ -1,0 +1,101 @@
+In 1994, the Swedish company L. M. Ericsson became interested in connecting its mobile phones to other devices (e.g., laptops)
+without cables. Together with four other companies (IBM, Intel, Nokia, and Toshiba), it formed a SIG (Special Interest Group, i.e.,
+consortium) in 1998 to develop a wireless standard for connecting computing and communication devices and accessories using
+short-range, low-power, inexpensive wireless radios. The project was named Bluetooth , after Harald Blaatand (Bluetooth) II
+(940–981), a Viking king who conquered Denmark and Norway, also without cables (i.e. roads).
+
+All manner of consumer electronic devices now use Bluetooth, from mobile phones and laptops to headsets, printers, keyboards, mice,
+game consoles, watches, music players, navigation units, and more. The Bluetooth protocols let these devices find and connect to 
+each other, an act called pairing , and securely transfer data. 
+
+--- BLUETOOTH ARCHITECTURE
+Let us start our study of the Bluetooth system with a quick overview of what it contains and what it is intended to do. The basic
+unit of a Bluetooth system is a piconet, which consists of a controller node and up to seven active worker nodes within a distance
+of 10 meters. Multiple piconets can exist in the same (large) room and can even be connected via a bridge node that takes part in
+multiple piconets. An interconnected collection of piconets is called a scatternet.
+
+In addition to the seven active worker nodes in a piconet, there can be up to 255 parked nodes in the net. These are devices that
+the controller has switched to a low-power state to reduce the drain on their batteries. In parked state, a device cannot do 
+anything except respond to an activation or beacon signal from the controller. Two minor intermediate power states, hold and sniff,
+also exist.
+
+The reason for the controller/worker design is that the designers intended to facilitate the implementation of complete Bluetooth
+chips for under $5. The consequence of this decision is that the workers are fairly dumb, basically just doing whatever the 
+controller tells them to do.
+
+At its heart, a piconet is a centralized TDM system, with the controller controlling the clock and determining which device gets to
+communicate in which time slot. All communication is between the controller and a worker; direct worker-worker communication is not 
+possible.
+
+--- BLUETOOTH APPLICATIONS
+Most network protocols just provide channels between communicating entities and let application designers figure out what they want
+to use them for. For example, 802.11 does not specify whether users should use their laptop computers for reading email, surfing the
+Web, or something else. In contrast, the Bluetooth SIG specifies particular applications to be supported and provides different
+protocol stacks for each one. At the time of this writing, there are more than two dozen applications, which are called profiles.
+Unfortunately, this approach leads to a very large amount of complexity. We will omit the complexity here but will briefly look at
+the profiles to see more clearly what the Bluetooth SIG is trying to accomplish with them.
+
+Six of the profiles are for different uses of audio and video. For example, the intercom profile allows two telephones to connect as
+walkie-talkies. The headset and hands-free profiles both provide voice communication between a headset and its base station, as might
+be used for hands-free telephony while driving a car. Other profiles are for streaming stereo-quality audio and video, say, from a
+portable music player to headphones, or from a digital camera to a TV.
+
+The human interface device profile is for connecting keyboards and mice to computers. Other profiles let a mobile phone or other
+computer receive images from a camera or send images to a printer. Perhaps of more interest is a profile to use a mobile phone as a
+remote control for a (Bluetooth-enabled) TV.
+
+Still other profiles enable networking. The personal area network profile lets Bluetooth devices form an ad hoc network or remotely
+access another network, such as an 802.11 LAN, via an access point. The dial-up networking profile was actually the original
+motivation for the whole project. It allows a (laptop) com- puter to connect to a mobile phone containing a built-in modem without
+using any cables, just radio signals.
+
+Was it really necessary to spell out all these applications in detail and provide different protocol stacks for each one? It would
+probably have been possible to get away with two protocol stacks instead of 25, one for file transfer and one for streaming
+real-time communication.
+
+--- THE BLUETOOTH PROTOCOL STACK
+The Bluetooth standard has many protocols grouped loosely into the layers shown in Fig. 4-31. The first observation to make is that
+the structure does not follow the OSI model, the TCP/IP model, the 802 model, or any other model.
+
+//skip della overview dei vari layer
+
+In the following sections, we will examine the Bluetooth radio layer and various link protocols, since these roughly correspond
+to the physical and MAC sublayers in the other protocol stacks we have studied.
+
+RADIO LAYER
+The radio layer moves the bits from controller to worker, or vice versa. It is a low-power system with a range of 10 meters
+operating in the same 2.4-GHz ISM band as 802.11.
+//dettagli del livello fisico, don't care
+
+LINK LAYERS
+The link control (or baseband) layer is the closest thing Bluetooth has to a MAC sublayer. It turns the raw bit stream into frames
+and defines some key formats. In the simplest form, the controller in each piconet defines a series of 625µsec time slots, with the
+controller’s transmissions starting in the even slots and the workers’ transmissions starting in the odd ones. This scheme is
+traditional time division multiplexing, with the controller getting half the slots and the workers sharing the other half. Frames 
+can be 1, 3, or 5 slots long. The payload of the frame can be encrypted for confidentiality with a key that is chosen when the
+controller and worker connect.
+
+The link manager protocol sets up logical channels, called links, to carry frames between the controller and a worker device that
+have discovered each other. A pairing procedure is followed to make sure that the two devices are allowed to communicate before the
+link is used.
+
+The old pairing method is that both devices must be configured with the same four-digit PIN (Personal Identification Number). The 
+matching PIN is how each device would know that it was connecting to the right remote device. However, unimaginative users and
+devices default to PINs such as ‘‘0000’’ and ‘‘1234’’ meant that this method provided very little security in practice.
+
+The new secure simple pairing method enables users to confirm that both devices are displaying the same passkey, or to observe the
+passkey on one device and enter it into the second device. This method is more secure because users do not have to choose or set a
+PIN. They merely confirm a longer, device-generated passkey. Of course, it cannot be used on some devices with limited input/output,
+such as a hands-free headset.
+
+Once pairing is complete, the link manager protocol sets up the links. Two kinds of links exist to carry the payload (user data).
+The first is the SCO (Synchronous Connection Oriented ) link. It is used for real-time data, such as telephone connections. This
+type of link is allocated a fixed slot in each direction. A worker may have up to three SCO links with its controller. Each SCO link
+can transmit one 64,000-bps PCM audio channel. Due to the time-critical nature of SCO links, frames sent over them are never
+retransmitted. Instead, forward error correction can be used to increase reliability.
+
+The other kind is the ACL (Asynchronous ConnectionLess ) link. This type of link is used for packet-switched data that is available
+irregularly. ACL traffic is delivered on a best-effort basis without guarantees. Frames can be lost and may have to be retransmitted.
+A worker may have only one ACL link to its controller.
+
+//skip bluetooth header

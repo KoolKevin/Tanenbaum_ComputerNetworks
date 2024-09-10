@@ -1,10 +1,10 @@
 DEF
 The the term ‘‘computer network’’ means a collection of interconnected, autonomous computing devices. Two computers are said
 to be interconnected if they can EXCHANGE INFORMATION.
-Interconnection can take place over a variety of transmission media including copper wire, fiber optic cable, and radio waves
+    Interconnection can take place over a variety of transmission media including copper wire, fiber optic cable, and radio waves
 (e.g., microwave, infrared, communication satellites). 
-Networks come in many sizes, shapes, and forms, as we will explore throughout the book. 
-They are usually connected to make larger networks, with the Internet being the most well-known example of a network of networks.
+    Networks come in many sizes, shapes, and forms, as we will explore throughout the book.  They are usually connected to make
+larger networks, with the Internet being the most well-known example of a network of networks.
 
 NB: dopo aggiunge questo dettaglio:  "collection of computers interconnected by a SINGLE TECNOLOGY"
 

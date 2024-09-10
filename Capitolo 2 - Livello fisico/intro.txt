@@ -1,0 +1,4 @@
+In this chapter, we look at the lowest layer in our reference model, the physical layer. It defines the electrical, timing, and
+other interfaces by which bits are sent as signals over channels. The physical layer is the foundation on which the network is 
+built. The properties of different kinds of physical channels determine the performance (e.g., throughput, latency, and error rate)
+so it is a good place to start our journey into network-land.

@@ -1,0 +1,206 @@
+--- 802.11 ARCHITECTURE AND PROTOCOL STACK
+802.11 networks can be used in two modes. The most popular mode is to connect clients, such as laptops and smartphones, to another
+network, such as a company intranet or the Internet. In infrastructure mode, each client is associated with an AP (Access Point)
+that is in turn connected to the other network. The client sends and receives its packets via the AP. Several access points may be
+connected together, typically by a wired network called a distribution system, to form an extended 802.11 network. In this case,
+clients can send frames to other clients via their APs.
+
+The other mode is an ad hoc network . This mode is a collection of computers that are associated so that they can directly send
+frames to each other. There is no access point. Since Internet access is the killer application for wireless, ad hoc networks are
+not very popular.
+
+Now we will look at the protocols. All the 802 protocols, including 802.11 and Ethernet, have a certain commonality of structure.
+The stack is the same for clients and APs. The physical layer corresponds fairly well to the OSI physical layer, but the data link
+layer in all the 802 protocols is split into two or more sublayers. In 802.11, the MAC sublayer determines how the channel is 
+allocated, that is, who gets to transmit next. Above it is the Logical Link control Sublayer, whose job it is to hide the
+differences between the different 802 variants (incluso Ethernet) and make them indistinguishable as far as the network layer is
+concerned.
+
+Several transmission techniques have been added to the physical layer as 802.11 has evolved since it first appeared in 1997. Queste 
+definiscono le varianti dello standard 802.11. Ad esempio, transmission techniques based on the orthogonal frequency division
+multiplexing includono: 802.11a (5 GHz frequency band), 802.11g (2.4 GHz). Transmission techniques that simultaneously use multiple
+antennas at the transmitter and receiver (MIMO) for a speed boost were finalized as 802.11n. Una combinazione di queste due tecniche,
+che permette larghezze di banda maggiori, è stata finalizzata in 802.11ac, most modern mobile devices use 802.11ac. Most recently, 
+the 802.11ax standard was approved for even more speed. 
+
+--- 802.11 PHYSICAL LAYER
+Each of the transmission techniques makes it possible to send a MAC frame over the air from one station to another. They differ,
+however, in the technology used and speeds achievable in practice.
+
+All of the 802.11 techniques use short-range radios to transmit signals in either the 2.4-GHz or the 5-GHz ISM frequency bands.
+These bands have the advantage of being unlicensed and hence freely available to any transmitter willing to meet some restrictions,
+such as radiated power of at most 1 W (though 50 mW is more typical for wireless LAN radios). Unfortunately, this fact is also known
+to the manufacturers of garage door openers, cordless phones, microwave ovens, and countless other devices, all of which compete with
+laptops and smartphones using WiFi for the same spectrum. The 2.4-GHz band tends to be more crowded than the 5-GHz band, so 5 GHz
+can be better for some applications even though it has shorter range due to the higher frequency. Unfortunately, the shorter radio
+waves at 5 GHz do not penetrate walls as well as the longer ones at 2.4 GHz do, so 5 GHz is not the unquestioned champion.
+
+All of the transmission methods also define multiple rates. The idea is that different rates can be used depending on the current
+conditions. If the wireless signal is weak, a low rate can be used. If the signal is clear, the highest rate can be used. This
+adjustment is called RATE ADAPTATION. Since the rates vary by a factor of 10 or more, good rate adaptation is important for good
+performance. 
+
+//skip dei delle specifiche varianti
+
+--- 802.11 MAC SUBLAYER PROTOCOL
+The 802.11 MAC sublayer protocol is quite different from that of Ethernet, due to two factors that are fundamental to wireless 
+communication. First (problem), radios are nearly always half duplex, meaning that they cannot transmit and listen for noise bursts
+at the same time on a single frequency. The received signal can easily be a million times weaker than the transmitted signal, so it
+cannot be heard at the same time. With Ethernet, a station just waits until the ether goes silent and then starts transmitting. If 
+it does not receive a noise burst back while transmitting the first 64 bytes, the frame has almost assuredly been delivered correctly
+ (ricevuto si, correctly forse). With wireless, this collision detection mechanism does not work.
+
+Instead, 802.11 tries to avoid collisions with a protocol called CSMA/CA. This protocol is conceptually similar to Ethernet’s 
+CSMA/CD, with channel sensing before sending and exponential back off after collisions. However, a STATION (non un AP) that has a
+frame to send starts with a random backoff (random number of time slots). It does NOT wait for a collision. The station waits until
+the channel is idle, by sensing that there is no signal for a short period of time, and counts down idle slots, pausing when frames 
+are sent. It sends its frame when the counter reaches 0. If the frame gets through, the destination immediately sends a short ack.
+Lack of an acknowledgement is inferred to indicate an error, whether a collision or otherwise. In this case, the sender doubles the
+backoff period and tries again, continuing with exponential backoff as in Ethernet until the frame has been successfully transmitted
+or the maximum number of retransmissions has been reached. 
+
+Compared to Ethernet, there are two main differences. First, starting backoffs early helps to avoid collisions (se tutte le stazioni
+fossero eager di inviare mentre il canale è occupato -> collisione). This avoidance is worthwhile because collisions are expensive,
+as the entire frame is transmitted even if one occurs. Second, acknowledgements are used to infer collisions because collisions
+cannot be detected.
+
+This mode of operation is called DCF (Distributed Coordination Function) because each station acts independently, without any kind
+of central control. The standard also includes an optional additional mode of operation called PCF (Point Coordination Function) in
+which the access point controls all activity in its cell, just like a cellular base station. However, PCF is not used in practice
+because there is normally no way to prevent stations in another nearby network from transmitting competing traffic.
+
+The second problem is that the transmission ranges of different stations may be different. With a wire, the system is engineered so
+that all stations can hear each other. With the complexities of RF propagation, this situation does not hold for wireless stations.
+Consequently, situations such as the hidden terminal problem mentioned earlier can arise. Since not all stations are within radio
+range of each other, transmissions going on in one part of a cell may not be received elsewhere in the same cell. In this example,
+station C is transmitting to station B. If A senses the channel, it will not hear anything and will falsely conclude that it may now
+start transmitting to B. This decision leads to a collision.
+
+The inverse situation is the exposed terminal problem. Here, B wants to send to C, so it listens to the channel. When it hears a
+transmission, it falsely concludes that it may not send to C, even though A may in fact be transmitting to D. This decision wastes
+a transmission opportunity. Si risolve con virtual channel sensing (NAV, RTS, CTS; //skip)
+
+- STRATEGIE AGGIUNTIVE
+CSMA/CA with physical and virtual sensing is the core of the 802.11 protocol. However, there are several other mechanisms that have
+been developed to go with it. Each of these mechanisms was driven by the needs of real operation, so we will look at them briefly.
+
+The first need we will take a look at is reliability. In contrast to wired networks, wireless networks are noisy and unreliable, in
+no small part due to interference from other kinds of devices, such as microwave ovens, which also use the unlicensed ISM bands. The
+use of acknowledgements and retransmissions is of little help if the probability of getting a frame through is small in the first
+place. The main strategy that is used to increase successful transmissions is to LOWER the transmission rate. Slower rates use more
+robust modulations that are more likely to be received correctly for a given signal-to-noise ratio. If too many frames are lost, a
+station can lower the rate. If frames are delivered with little loss, a station can occasionally test a higher rate to see if it
+should be used.
+
+Another strategy to improve the chance of the frame getting through undamaged is to send shorter frames. If the probability of any
+bit being in error is p, the probability of an n-bit frame being received entirely correctly is (1-p)^n. For example, for p=10^(-4),
+the probability of receiving a full Ethernet frame (12,144 bits) correctly is less than 30%. Most frames will be lost. But if the
+frames are only a third as long (4048 bits), two thirds of them will be received correctly. Now most frames will get through and
+fewer retransmissions will be needed. Shorter frames can be implemented by reducing the maximum size of the message that is accepted
+from the network layer. Alternatively, 802.11 allows frames to be split into smaller pieces, called FRAGMENTS, each with its own
+checksum. The fragment size is not fixed by the standard, but is a parameter that can be adjusted by the AP. The fragments are
+individually numbered and acknowledged using a stop-and-wait protocol (i.e., the sender may not transmit fragment k + 1 until it has
+received the acknowledgement for fragment k). Once the channel has been acquired, multiple fragments are sent as a burst. They go
+one after the other with an acknowledgement (and possibly retransmissions) in between, until either the whole frame has been
+successfully sent or the transmission time reaches the maximum allowed. 
+
+The second need we will discuss is SAVING POWER. Battery life is always an issue with mobile wireless devices. The 802.11 standard
+pays attention to the issue of power management so that clients need not waste power when they have neither information to send nor
+to receive. 
+
+The basic mechanism for saving power builds on beacon frames . Beacons are periodic broadcasts by the AP (e.g., every 100 msec).
+The frames advertise the presence of the AP to clients and carry system parameters, such as the identifier of the AP, the time, how
+long until the next beacon, and security settings.
+
+Clients can set a power-management bit in frames that they send to the AP to tell it that they are entering power-save mode. In this
+mode, the client can doze and the AP will buffer traffic intended for it. To check for incoming traffic, the client wakes up for
+every beacon, and checks a traffic map that is sent as part of the beacon. This map tells the client if there is buffered traffic.
+If so, the client sends a poll message to the AP, which then sends the buffered traffic. The client can then go back to sleep until
+the next beacon is sent. 
+
+The third and last need we will examine is QUALITY OF SERVICE. When the VoIP traffic in the preceding example competes with
+peer-to-peer traffic, the VoIP traffic will suffer. It will be delayed due to contention with the high-bandwidth peer-to- peer
+traffic, even though the VoIP bandwidth is low. These delays are likely to degrade the voice calls. To prevent this degradation,
+we would like to let the VoIP traffic go ahead of the peer-to-peer traffic, as it is of higher priority.
+
+IEEE 802.11 has a clever mechanism to provide this kind of quality of service that was introduced as set of extensions under the
+name 802.11e in 2005. It works by extending CSMA/CA with carefully defined intervals between frames. After a frame has been sent, a
+certain amount of idle time is required before any station may send a frame to check that the channel is no longer in use. The trick
+is to define different time intervals for different kinds of frames.
+
+Five intervals are depicted in Fig. 4-28. The interval between regular data frames is called the DIFS (DCF InterFrame Spacing). Any
+station may attempt to acquire the channel to send a new frame after the medium has been idle for DIFS. The usual contention rules
+apply, and binary exponential backoff may be needed if a collision occurs. The shortest interval is SIFS (Short InterFrame
+Spacing). It is used to allow the parties in a single dialog the chance to go first. Examples include letting the receiver send an
+ACK, other control frame sequences like RTS and CTS, or letting a sender transmit a burst of fragments. Sending the next fragment
+after waiting only SIFS is what prevents another station from jumping in with a frame in the middle of the exchange.
+
+The two AIFS (Arbitration InterFrame Space ) intervals show examples of two different priority levels. The short interval, AIFS1, is
+smaller than DIFS but longer than SIFS. It can be used by the AP to move voice or other high-priority traffic to the head of the 
+line. The AP will wait for a shorter interval before it sends the voice traffic, and thus send it before regular traffic. The long
+interval, AIFS4, is larger than DIFS. It is used for background traffic that can be deferred until after regular traffic. The AP 
+will wait for a longer interval before it sends this traffic, giving regular traffic the opportunity to transmit first. The complete 
+quality of service mechanism defines four different priority levels that have different backoff parameters as well as different idle
+parameters.
+
+// SKIP 802.11 FRAME STRUCTURE 
+
+--- 802.11 SERVICES
+The 802.11 standard defines the services that the clients, the access points, and the network connecting them must provide to be a
+conformant wireless LAN. The 802.11 standard offers various services.
+
+ASSOCIATION AND DATA DELIVERY
+The association service is used by mobile stations to connect themselves to APs. Typically, it is used just after a station moves
+within radio range of the AP. Upon arrival, the station learns the identity and capabilities of the AP, either from beacon frames or
+by directly asking the AP. The capabilities include the data rates supported, security arrangements, power-saving capabilities,
+quality of service support, and more. The AP’s beacon message also includes a SSID (Service Set IDentifier), which most people often
+think of as the network name. The station sends a request to associate with the AP; the AP may accept or reject the request. While 
+beacons are always broadcast, the SSID may or may not be broadcast. If the SSID is not broadcast, the station must somehow know
+(or discover) the name to associate to that AP.
+
+Reassociation lets a station change its preferred AP. This is useful for mobile stations moving from one AP to another AP in the
+same extended 802.11 LAN, like a handover in the cellular network. If used correctly, no data will be lost as a consequence of the
+handover. (But 802.11, like Ethernet, is a best-effort service). No delivery guarantees are given (pensa al numero limitato di
+ritrasmissioni se non si riceve un ack).
+
+Once frames reach the AP, the distribution service determines how to route them. If the destination is local to the AP, the frames
+can be sent out directly over the air. Otherwise, they will have to be forwarded over the wired network. The integration service 
+handles any translation that is needed for a frame to be sent outside the 802.11 LAN, or to arrive from outside the 802.11 LAN.
+The common case here is connecting the wireless LAN to the Internet. 
+
+Data transmission is what it is all about, so 802.11 naturally provides a data delivery service. This service lets stations transmit
+and receive data using the protocols we described earlier in this chapter. Since 802.11 is modeled on Ethernet and transmission over
+Ethernet is not guaranteed to be 100% reliable, transmission over 802.11 is not guaranteed to be reliable either. Higher layers must
+deal with detecting and correcting errors.
+
+SECURITY AND PRIVACY
+Stations must also authenticate before they can send frames via the AP, but authentication is handled in different ways depending on
+the choice of security scheme. If the 802.11 network is ‘‘open’’, anyone is allowed to use it. Otherwise, credentials are needed to
+authenticate.
+
+A common authentication approach, WPA2 (WiFi Protected Access 2), implements security as defined in the 802.11i standard. (WPA is an
+interim scheme that implements a subset of 802.11i. We will skip it and go straight to the complete scheme.) With WPA2, the AP can
+talk to an authentication server that has a username and password database to determine if the station is allowed to access the
+network. Alternatively, a pre-shared key, which is a fancy name for a network password, may be configured. Several frames are 
+exchanged between the station and the AP with a challenge and response that lets the station prove it has the right credentials.
+This exchange happens after association.
+
+Another authentication approach that is commonly used in enterprise networks is 802.1X, which implements an approach called
+port-based authentication. 802.1X relies on centralized authentication (e.g., authentication of devices to a centralized server),
+which creates the possibilities for more fine-grained access control, accounting, billing, and attribution. The station that is
+authenticating is sometimes called a supplicant; this device authenticates to the network through an authenticator, which talks to
+the authentication server. 802.1X relies on an authentication framework called EAP (Enhanced Authentication Protocol). The EAP
+framework defines more than 50 different methods to perform authentication, but common methods include EAP-TLS, which performs
+authentication based on certificates; EAP-TTLS and PEAP, which allow the client to associate using a variety of methods, including
+password-based authentication; and EAP-SIM, whereby a mobile phone can authenticate using a SIM. 802.1X has many advantages over
+simple WPA, such as the ability to perform fine-grained access control based on user, but it requires a certificate infrastructure 
+to administer. 
+
+The predecessor to WPA was called WEP (Wired Equivalent Privacy). For this scheme, authentication with a preshared key happens before
+association. WEP is now widely known to be insecure and is effectively no longer used. Software to crack WEP passwords is now freely
+available.
+
+With WEP broken and WPA deprecated, the next try was WPA2. It uses a privacy service that manages the details of encryption and
+decryption. The encryption algorithm for WPA2 is based on AES (Advanced Encryption Standard). The keys that are used for encryption 
+are determined during the authentication procedure. Unfortunately, WPA2 was broken in 2017 (Vanhoef and Piessens, 2017). Good
+security is very hard, even with unbreakable crypto, because key management is the weakest link.

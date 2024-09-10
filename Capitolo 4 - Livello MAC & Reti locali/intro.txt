@@ -1,0 +1,17 @@
+Many link-layer communications protocols that we studied in Chap. 3 rely on a broadcast communication medium to transmit data.
+Any such protocol requires additional mechanisms to allow multiple senders to efficiently and fairly share the broadcast medium.
+
+In any broadcast network, the key issue involves determining who gets to use the channel when there is competition for it. For
+example, consider a conference call in which six people, on six different telephones, are all connected so that each one can hear
+and talk to everyone else. It is very likely that when one of them stops speaking, two or more will start talking at once, leading
+to chaos. In a face-to-face meeting, chaos is often avoided by a second external channel. For example, at a meeting, people raise
+their hands to request permission to speak. When only a single channel is available, it is much harder to determine who should go
+next. (In the literature, broadcast channels are sometimes referred to as multiaccess channels or random access channels).
+
+The protocols used to determine who goes next on a multiaccess channel belong to a sublayer of the data link layer called the MAC
+(Medium Access Control ) sublayer. The MAC sublayer is especially important in LANs, particularly wireless ones because wireless is
+naturally a broadcast channel. Some aspects of a WAN (e.g., a direct interconnect) are point-to-point; others (e.g., the shared
+access network in a cable ISP) are shared and also rely on the MAC layer to facilitate sharing.
+
+(Technically, the MAC sublayer is the bottom part of the data link layer, so logically we should have studied it before examining
+all the point-to-point protocols in Chap. 3)

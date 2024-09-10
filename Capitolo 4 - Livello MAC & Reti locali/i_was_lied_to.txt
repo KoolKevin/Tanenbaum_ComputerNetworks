@@ -1,0 +1,4 @@
+Tanenbaum a quanto pare mi ha mentito, nel capitolo 3. Il livello 2 si occupa semplicemente di fare framing, rilevare ma non gestire
+gli errori, gestire le collisioni e dei collegamenti punto a punto in generale. Non gestisce direttamente il controllo di flusso o
+la correzione degli errori / gestione delle ritrasmissioni. In altre parole il livello 2 in pratica fornisce solo un servio 
+connectionless e unreliable in quanto: rileva gli errori ma delega la gestione ai livelli superiori, e non manda indietro ack.

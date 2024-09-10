@@ -1,0 +1,152 @@
+We have now finished our discussion of channel allocation protocols in the abstract, so it is time to see how these principles
+apply to real systems. Many of the designs for personal, local, and metropolitan area networks have been standardized under the
+name of IEEE 802. A few have survived but many have not. The most important of the survivors are 802.3 (Ethernet) and 802.11 (wireless LAN).
+Bluetooth (wireless PAN) is widely deployed but has now been standardized outside of 802.15.
+
+We will begin our study of real systems with Ethernet, probably the most ubiquitous kind of computer network in the world. Two kinds
+of Ethernet exist: classic Ethernet , which solves the multiple access problem using the techniques we have studied in this chapter;
+and switched Ethernet , in which devices called switches are used to connect different computers. It is important to note that,
+while they are both referred to as Ethernet, they are quite different. In practice, only switched Ethernet is used nowadays.
+
+--- CLASSIC ETHERNET, PHYSICAL LAYER
+Classic Ethernet snaked around the building as a single long cable to which all the computers were attached. Each version (thick, think, ...)
+of Ethernet has a maximum cable length per segment (i.e., unamplified length) over which the signal will propagate. To allow larger
+networks, multiple cables can be connected by repeaters. A repeater is a physical layer device that receives, amplifies (i.e.,
+regenerates), and retransmits signals in both directions. As far as the software is concerned, a series of cable segments connected
+by repeaters is no different from a single cable (except for a small amount of delay introduced by the repeaters). An Ethernet could
+contain multiple cable segments and multiple repeaters, but no two transceivers (ricetrasmettitori, dove colleghi i computer al cavo)
+could be more than 2.5 km apart and no path between any two transceivers could traverse more than four repeaters. The reason for
+this restriction was that the MAC protocol, which we will look at next, would work correctly.
+
+- CLASSIC ETHERNET MAC SUBLAYER PROTOCOL
+The format used to send frames is shown in Fig. 4-14.
+
+- First comes a Preamble of 8 bytes, each containing the bit pattern 10101010 (with the exception of the last byte, in which the
+last 2 bits are set to 11). This last byte is called the Start of Frame delimiter for 802.3. The last two 1 bits tell the receiver
+that the rest of the frame is about to start.
+
+- Next come two addresses, one for the destination and one for the source. They are each 6 bytes long.
+    The first transmitted bit of the destination address is a 0 for ordinary addresses and a 1 for group addresses. Group addresses
+allow multiple stations to listen to a single address. When a frame is sent to a group address, all the stations in the group
+receive it. Sending to a group of stations is called MULTICASTING. The special address consisting of all 1 bits is reserved for
+BROADCASTING. A frame containing all 1s in the destination field is accepted by all stations on the network. Multicasting is more
+selective, but it involves group management to define which stations are in the group. Conversely, broadcasting does not
+differentiate between stations at all, so it does not require any group management.
+
+An interesting feature of station source addresses is that they are globally unique, assigned centrally by IEEE to ensure that no
+two stations anywhere in the world have the same address. The idea is that any station can uniquely address any other station by 
+just giving the right 48-bit number. To do this, the first 3 bytes of the address field are used for an OUI (Organizationally Unique
+Identifier). Values for this field are assigned by IEEE and indicate a manufacturer. Manufacturers are assigned blocks of 2^24
+addresses. The manufacturer assigns the last 3 bytes of the address and programs the complete address into the NIC  (Network 
+Interface Card, la scheda di rete) before it is sold. 
+
+- Next comes the Type or Length field, depending on whether the frame is Ethernet or IEEE 802.3.
+    Ethernet uses a Type field to tell the receiver what to do with the frame. Multiple network-layer protocols may be in use at
+the same time on the same machine, so when an Ethernet frame arrives, the operating system has to know which one to hand the frame
+to. The Type field specifies which process to give the frame to. For example, a type code of 0x0800 means that the data contains an
+IPv4 packet.
+
+IEEE 802.3, in its wisdom, decided that this field would carry the length of the frame, since the Ethernet type was determined
+by looking inside the data, a layering violation if ever there was one. Of course, this meant there was no way for the receiver
+to figure out what to do with an incoming frame. That problem was handled by the addition of another header for the logical link
+control (LLC) protocol within the data, which we will look at later.
+
+Unfortunately, by the time 802.3 was published, so much hardware and software for DIX Ethernet was already in use that few
+manufacturers and users were enthusiastic about repackaging the Type and Length fields. In 1997, IEEE threw in the towel and said
+that both ways were fine with it. Fortunately, all the Type fields in use before 1997 had values greater than 1500, then well
+established as the maximum data size. Now the rule is that any number there less than or equal to 0x600 (1536) can be interpreted 
+as Length, and any number greater than 0x600 can be interpreted as Type. Now IEEE can maintain that everyone is using its standard
+and everybody else can keep on doing what they were already doing (not bothering with logical link control protocol). This is what
+happens when (industrial) politics meets technology. 
+
+- Next come the data, up to 1500 bytes. This limit was chosen somewhat arbitrarily at the time the Ethernet standard was cast in
+stone, mostly based on the fact that a transceiver needs enough RAM to hold an entire frame and RAM was expensive in 1978. A larger
+upper limit would have meant more RAM, and hence a more expensive transceiver. 
+
+In addition to there being a maximum frame length, there is also a minimum frame length. The reason for having a minimum length
+frame is to prevent a station from completing the transmission of a short frame before the first bit has even reached the far end
+of the cable, where it may collide with another frame. If the data portion of a frame is less than 46 bytes, the Pad field is used
+to fill out the frame to the minimum size. 
+
+If a station tries to transmit a very short frame, it is conceivable that a collision will occur, but the transmission will have
+completed before the noise burst gets back to the station at. The sender will then incorrectly conclude that the frame was
+successfully sent. To prevent this situation from occurring, all frames must take more than 2*tao to send. so that the transmission
+is still taking place when the noise burst gets back to the sender.
+
+- The final field is the Checksum. It is a 32-bit CRC. This CRC is an error-detecting code that is used to determine if the bits
+of the frame have been received correctly. It just does error detection, with the frame dropped if an error is detected.
+
+- CSMA/CD with Binary Exponential Backoff
+Classic Ethernet uses the 1-persistent CSMA/CD algorithm that we studied. This means that stations sense the medium when they have
+a frame to send and send the frame as soon as the medium becomes idle. They monitor the channel for collisions as they send. If
+there is a collision, they abort the transmission with a short jam signal and retransmit after a random interval.
+
+Let us now see how the random interval is determined when a collision occurs, as it is a new method. After a collision, time is
+divided into discrete slots whose length is equal to the worst-case round-trip propagation time on the ether (2*tao). After the
+first collision, each station waits either 0 or 1 slot times at random before trying again. If two stations collide and each one
+picks the same random number, they will collide again. After the second collision, each one picks either 0, 1, 2, or 3 at random
+and waits that number of slot times. If a third collision occurs (the probability of this happening is 0.25), the next time the
+number of slots to wait is chosen at random from the interval 0 to 2^3-1. In general, after i collisions, a random number between
+0 and 2 i < 1 is chosen, and that number of slots is skipped.
+
+This algorithm, called binary exponential backoff, was chosen to dynamically adapt to the number of stations trying to send. If the
+randomization interval for all collisions were 1023, the chance of two stations colliding for a second time would be negligible, but
+the average wait after a collision would be hundreds of slot times, introducing significant delay. On the other hand, if each 
+station always delayed for either 0 or 1 slots, then if 100 stations ever tried to send at once they would collide over and over
+until 99 of them picked 1 and the remaining station picked 0. This might take years. By having the randomization interval grow 
+exponentially as more and more consecutive collisions occur, the algorithm ensures a low delay when only a few stations collide but
+also ensures that the collisions are resolved in a reasonable interval when many stations collide.
+
+If there is no collision, the sender assumes that the frame was probably successfully delivered. That is, neither CSMA/CD nor
+Ethernet provides acknowledgements. This choice is appropriate for wired and optical fiber channels that have low error rates. Any
+errors that do occur must then be detected by the CRC and recovered by higher layers. For wireless channels that have more errors, 
+we will see that acknowledgements are used. In altri termini Ethernet è CONNECTIONLESS e UNRELIABLE.
+
+--- SWITCHED ETHERNET
+Ethernet soon began to evolve away from the single long cable architecture of classic Ethernet. The problems associated with
+finding breaks or loose connections drove it toward a different kind of wiring pattern, in which each station has a dedicated
+cable running to a central hub. A HUB simply connects all the attached wires electrically, as if they were soldered together.
+Adding or removing a station is simpler in this configuration, and cable breaks can be detected easily.
+
+However, hubs do not increase capacity because they are logically equivalent to the single long cable of classic Ethernet (stesso
+dominio  di collisione). As more and more stations are added, each station gets a decreasing share of the fixed capacity (non devo
+sovrappormi  ad altri). Eventually, the LAN will saturate. One way out is to go to a higher speed, say, from 10 Mbps to 100 Mbps,
+1 Gbps, or even higher speeds. But with the growth of multimedia and powerful servers, even a 1-Gbps Ethernet can become saturated. 
+
+Fortunately, there is an another way to deal with increased load: switched Ethernet. The heart of this system is a SWITCH containing
+a high-speed backplane that connects all of the ports. From the outside, a switch looks just like a hub. They are both boxes,
+typically with 4 to 48 ports, each with a standard RJ-45 connector for a twisted-pair cable. Each cable connects the switch or hub
+to a single computer. A switch has the same advantages as a hub, too. It is easy to add or remove a new station by plugging or
+unplugging a wire, and it is easy to find most faults since a flaky cable or port will usually affect just one station. There is
+still a shared component that can fail, the switch itself, but if all stations lose connectivity the IT folks know what to do to
+fix the problem: replace the whole switch. 
+
+Inside the switch, however, something very different is happening. Switches only output frames to the ports for which those frames
+are destined. When a switch port receives an Ethernet frame from a station, the switch checks the Ethernet addresses to see which
+port the frame is destined for. This step requires the switch to be able to work out which ports correspond to which addresses, a
+process that we will describe later when we get to the general case of switches connected to other switches. For now, just assume
+that the switch knows the frame’s destination port. The switch then forwards the frame over its high-speed backplane to the
+destination port. The destination port then transmits the frame on the wire so that it reaches the intended station. NONE of the
+other ports even knows the frame exists. 
+
+What happens if more than one of the stations or ports wants to send a frame at the same time? Again, switches differ from hubs.
+In a hub, all stations are in the same collision domain. They must use the CSMA/CD algorithm to schedule their transmissions. In a
+switch, each port is its own independent collision domain. In the common case that the cable is full duplex, both the station and
+the port can send a frame on the cable at the same time, without worrying about other ports and stations. Collisions are now
+impossible and CSMA/CD is not needed. However, if the cable is half duplex, the station and the port must contend for transmission
+with CSMA/CD in the usual way.
+
+A switch improves performance over a hub in two ways. First, since there are no collisions, the capacity is used more efficiently.
+Second, and more importantly, with a switch multiple frames can be sent simultaneously (by different stations). These frames will 
+reach the switch ports and travel over the switch’s backplane to be output on the proper ports. However, since two frames might be
+sent to the same output port at the same time, the switch must have buffering so that it can temporarily queue an input frame until
+it can be transmitted to the output port. Overall, these improvements give a large performance win that is not possible with a hub.
+The total system throughput can often be increased by an order of magnitude, depending on the number of ports and traffic patterns.
+
+The change in the ports on which frames are output also has security benefits. Most LAN interfaces have a promiscuous mode, in which
+all frames are given to each computer, not just those addressed to it. With a hub, every computer that is attached can see the
+traffic sent between all of the other computers. Spies and busybodies love this feature. With a switch, traffic is forwarded only 
+to the ports where it is destined. This restriction provides better isolation so that traffic will not easily escape and fall into
+the wrong hands. However, it is better to encrypt traffic if security is really needed.
+
+//skip alle varie tipologie di ethernet con velocità mano a mano incrementali
