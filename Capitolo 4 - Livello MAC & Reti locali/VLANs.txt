@@ -1,0 +1,79 @@
+In the early days of local area networking, thick yellow cables snaked through the cable ducts of many office buildings. Every computer
+they passed was plugged in. No thought was given to which computer belonged on which LAN. All the people in adjacent offices were put on
+the same LAN, whether they belonged together or not. Geography trumped corporate organization charts.
+
+With the advent of twisted pair and hubs in the 1990s, all that changed. Buildings were rewired (at considerable expense) to rip out all
+the yellow garden hoses and install twisted pairs from every office to central wiring closets at the end of each corridor or in a central
+machine room, as illustrated in Fig. 4-38. If the Vice President in Charge of Wiring was a visionary, Category 5 twisted pairs were
+installed; if he was a bean counter, the existing (Category 3) telephone wiring was used. 
+
+Today, the cables have changed and hubs have become switches, but the wiring pattern is still the same. This pattern makes it possible
+to configure LANs LOGICALLY rather than PHYSICALLY. For example, if a company wants k LANs, it could buy k switches. By carefully choosing
+which connectors to plug into which switches, the occupants of a LAN can be chosen in a way that makes organizational sense, without too
+much regard to geography. Does it matter who is on which LAN? After all, in nearly all organizations, all the LANs are interconnected. In
+short, yes, it often matters. Network administrators like to group users on LANs to reflect the organizational structure rather than the
+physical layout of the building, for a variety of reasons.
+
+One issue is security. One LAN might host Web servers and other computers intended for public use. Another LAN might host computers 
+containing the records of the Human Resources department that are not to be passed outside of the department. In such a situation,
+putting all the computers on a single LAN and not letting any of the servers be accessed from off the LAN makes sense. Management tends
+to frown when hearing that such an arrangement is impossible.
+
+A second issue is load. Some LANs are more heavily used than others and it may be desirable to separate them. For example, if the folks
+in research are running all kinds of nifty experiments that sometimes get out of hand and completely saturate their LAN, the folks in
+management may not be enthusiastic about donating some of the capacity they were planning to use for videoconferencing to help out. Then
+again, this might impress on management the need to install a faster network.
+
+A third issue is broadcast traffic. Bridges broadcast traffic when the location of the destination is unknown, and upper-layer protocols
+use broadcasting as well. For example, when a user wants to send a packet to an IP address x, how does it know which MAC address to put
+in the frame? Briefly summarized, the answer is that it broadcasts a frame containing the question ‘‘who owns IP address x?’’ Then it
+waits for an answer. As the number of computers in a LAN grows, so does the number of broadcasts. Each broadcast consumes more of the
+LAN capacity than a regular frame because it is delivered to every computer on the LAN. By keeping LANs no larger than they need to be,
+the impact of broadcast traffic is reduced.
+
+Related to broadcasts is the problem that once in a while a network interface will break down or be misconfigured and begin generating an
+endless stream of broadcast frames. If the network is really unlucky, some of these frames will elicit responses that lead to ever more
+traffic. The result of this broadcast storm is that (1) the entire LAN capacity is occupied by these frames, and (2) all the machines
+on all the interconnected LANs are crippled just processing and discarding all the frames being broadcast. At first it might appear that
+broadcast storms could be limited in scope and reach by separating the LANs with bridges or switches, but if the goal is to achieve
+transparency (i.e., a machine can be moved to a different LAN across the bridge without anyone noticing it), then bridges have to forward
+broadcast frames.
+
+Having seen why companies might want multiple LANs with restricted scopes, let us get back to the problem of decoupling the logical
+topology from the physical topology. Building a physical topology to reflect the organizational structure can add work and cost, even
+with centralized wiring and switches. For example, if two people in the same department work in different buildings, it may be easier to
+wire them to different switches that are part of different LANs. Even if this is not the case, a user might be shifted within the company
+from one department to another without changing offices, or might change offices without changing departments. This might result in the
+user being on the wrong LAN until an administrator manually changed the user’s connector from one switch to another. Furthermore, the
+number of computers that belong to different departments may not be a good match for the number of ports on switches; some departments
+may be too small and others so big that they require multiple switches. This results in wasted switch ports that are not used. 
+
+In many companies, organizational changes occur all the time, meaning that system administrators spend a lot of time pulling out plugs
+and pushing them back in somewhere else. Also, in some cases, the change cannot be made at all because the twisted pair from the user’s
+machine is too far from the correct switch (e.g., in the wrong building), or the available switch ports are on the wrong LAN. In response
+to customer requests for more flexibility, network vendors began working on a way to rewire buildings entirely in software. The resulting
+concept is called a VLAN (Virtual LAN). It has been standardized by the IEEE 802 committee and is now widely deployed in many
+organizations. Let us now take a look at it.
+
+VLANs are based on VLAN-aware switches. To set up a VLAN-based network, the network administrator decides how many VLANs there will be,
+which computers will be on which VLAN, and what the VLANs will be called. As an example, consider the bridged LAN of Fig. 4-39, in which
+nine of the machines belong to the G (gray) VLAN and five belong to the W (white) VLAN. Machines from the gray VLAN are spread across 
+two switches, including two machines that connect to a switch via a hub.
+
+To make the VLANs function correctly, configuration tables have to be set up in the bridges. These tables tell which VLANs are accessible
+via which ports. When a frame comes in from, say, the gray VLAN, it must be forwarded on all the ports marked with a G. This holds for
+ordinary (i.e., unicast) traffic for which the bridges have not learned the location of the destination, as well as for multicast and
+broadcast traffic. Note that a port may be labeled with multiple VLAN.
+
+As an example, suppose that one of the gray stations plugged into bridge B1 in Fig. 4-39 sends a frame to a destination that has not been
+observed beforehand. Bridge B1 will receive the frame and see that it came from a machine on the gray VLAN, so it will flood the frame on
+all ports labeled G (except the incoming port). The frame will be sent to the five other gray stations attached to B1 as well as over
+the link from B1 to bridge B2. At bridge B2, the frame is similarly forwarded on all ports labeled G. This sends the frame to one further
+station and the hub (which will transmit the frame to all of its stations). The hub has both labels because it connects to machines from
+both VLANs. The frame is not sent on other ports without G in the label because the bridge knows that there are no machines on the gray
+VLAN that can be reached via these ports.
+
+In our example, the frame is only sent from bridge B1 to bridge B2 because there are machines on the gray VLAN that are connected to B2.
+Looking at the white VLAN, we can see that the bridge B2 port that connects to bridge B1 is not labeled W. This means that a frame on the
+white VLAN will not be forwarded from bridge B2 to bridge B1. This behavior is correct because no stations on the white VLAN are
+connected to B1.

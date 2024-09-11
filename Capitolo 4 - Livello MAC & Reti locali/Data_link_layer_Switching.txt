@@ -1,0 +1,175 @@
+Many organizations have multiple LANs and wish to connect them. Would it not be convenient if we could just join the LANs together
+to make a larger LAN? In fact, we can do this when the connections are made with devices called bridges. The Ethernet switches we
+described nel file Ethernet.txt are a modern name for bridges; they provide functionality that goes beyond classic Ethernet and
+Ethernet hubs to make it easy to join multiple LANs into a larger and faster network. We shall use
+the terms ‘‘BRIDGE’’ and ‘‘SWITCH’’ INTERCHANGEABLY.
+
+Bridges operate in the data link layer, so they examine the data link layer addresses to forward frames. Since they are NOT supposed
+to examine the payload field of the frames they forward, they can handle IP packets as well as OTHER KINDS of packets, such as
+AppleTalk packets. In contrast, routers examine the addresses in packets and route based on them, so they only work with the
+protocols that they were designed to handle.
+
+In this section, we will look at how bridges work and are used to join multiple physical LANs into a single logical LAN. We will
+also look at how to do the reverse and treat one physical LAN as multiple logical LANs, called Virtual LANs.
+
+--- USES OF BRIDGES
+Before getting into the technology of bridges, let us take a look at some common situations in which bridges are used. We will
+mention three reasons why a SINGLE organization may end up with MULTIPLE LANs.
+
+First, many university and corporate departments have their own LANs to connect their own personal computers, servers, and devices
+such as printers. Since the goals of the various departments differ, different departments may set up different LANs, without regard
+to what other departments are doing. Sooner or later, though, there is a need for interaction, so bridges are needed. In this
+example, multiple LANs come into existence due to the autonomy of their owners. 
+
+Second, the organization may be geographically spread over several buildings separated by considerable distances. It may be cheaper
+to have separate LANs in each building and connect them with bridges and a few long-distance fiber optic links than to run all the
+cables to a single central switch. Even if laying the cables is easy to do, there are limits on their lengths (e.g., 200m for
+twisted-pair gigabit Ethernet). The network would not work for longer cables due to the excessive signal attenuation or round-trip
+delay. The only solution is to partition the LAN and install bridges to join the pieces to increase the total physical distance
+that can be covered.
+
+Third, it may be necessary to split what is logically a single LAN into separate LANs (connected by bridges) to accommodate the load.
+At many large universities, for example, thousands of workstations are available for student and faculty computing. Companies may
+also have thousands of employees. The scale of this system precludes putting all the workstations on a single LAN as there are
+more computers than ports on any Ethernet hub, and more stations than allowed on a single classic Ethernet. Even if it were possible
+to wire all the workstations together, putting more stations on an Ethernet hub or classic Ethernet would not add capacity. All of
+the stations share the same, fixed amount of bandwidth. The more stations there are, the less average bandwidth per station.
+
+However, two separate LANs have twice the capacity of a single LAN. Bridges let the LANs be joined together while keeping this
+capacity. The key is not to send traffic onto ports where it is not needed, so that each LAN can run at full speed. This behavior
+also increases reliability, since on a single LAN a defective node that keeps outputting a continuous stream of garbage can clog up
+the entire LAN. By deciding what to forward and what not to forward, bridges act like fire doors in a building, preventing a single
+node that has gone berserk from bringing down the entire system.
+
+To make these benefits easily available, ideally bridges should be completely transparent. It should be possible to go out and buy
+bridges, plug the LAN cables into the bridges, and have everything work perfectly, instantly. There should be no hardware changes 
+required, no software changes required, no downloading of routing tables or parameters, nothing at all. Just plug in the cables and
+walk away. Furthermore, the operation of the existing LANs should not be affected by the bridges at all. As far as the stations are
+concerned, there should be no observable difference whether or not they are part of a bridged LAN. It should be as easy to move
+stations around the bridged LAN as it is to move them around a single LAN.
+
+Surprisingly enough, it is actually possible to create bridges that are transparent. Two algorithms are used: a backward learning 
+algorithm to stop traffic being sent where it is not needed; and a spanning tree algorithm to break loops that may be formed when
+switches are cabled together willy-nilly. Let us now take a look at these algorithms in turn to learn how this magic is accomplished.
+
+--- LEARNING BRIDGES
+The topology of two LANs bridged together is described for two cases. On the left-hand side, two multidrop LANs, such as classic
+Ethernets, are joined by a special station, the bridge, that sits on both LANs. On the right-hand side, LANs with point-to-point
+cables, including one hub, are joined together. The bridges are the devices to which the stations and hub are attached. 
+
+Bridges were developed when classic Ethernets were in use, so they are often shown in topologies with multidrop cables, as in the
+first example. However, all the topologies that are encountered today are comprised of point-to-point cables and switches. The
+bridges work the same way in both settings. All of the stations attached to the same port on a bridge belong to the same collision
+domain, and this is different than the collision domain for other ports. If there is more than one station, as in a classic Ethernet,
+a hub, or a half-duplex link, the CSMA/CD protocol is used to send frames. 
+
+Each bridge operates in promiscuous mode, that is, it accepts every frame transmitted by the stations attached to each of its ports.
+The bridge must decide whether to forward or discard each frame, and, if the former, on which port to output the frame. This decision
+is made by using the DESTINATION ADDRESS.
+
+As an example, consider the topology of Fig. 4-33(a). If station A sends a frame to station B, bridge B1 will receive the frame on
+port 1. This frame can be immediately discarded without further ado be- cause it is already on the correct port. However, in the
+topology of Fig. 4-33(b) suppose that A sends a frame to D. Bridge B1 will receive the frame on port 1 and output it on port 4.
+Bridge B2 will then receive the frame on its port 4 and output it on its port 1.
+
+A simple way to implement this scheme is to have a big (hash) table inside the bridge. The table can list each possible destination
+and which output port it belongs on. When the bridges are first plugged in, all the hash tables are EMPTY. None of the bridges know 
+where any of the destinations are, so they use a flooding algorithm: every incoming frame for an unknown destination is output on all
+the ports to which the bridge is connected except the one it arrived on. As time goes on, the bridges learn where destinations are.
+Once a destination is known, frames destined for it are put only on the proper port; they are not flooded. 
+
+The algorithm used by the bridges is backward learning. As mentioned above, the bridges operate in promiscuous mode, so they
+see every frame sent on any of their ports. By looking at the SOURCE addresses, they can tell which machines are accessible on which
+ports and update the hash table.
+
+The topology can change as machines and bridges are powered up and down and moved around. To handle DYNAMIC topologies, whenever a
+hash table entry is made, the arrival time of the frame is noted in the entry. Whenever a frame whose source is already in the table
+arrives, its entry is updated with the current time. Thus, the time associated with every entry tells the last time a frame from that
+machine was seen. 
+
+Periodically, a process in the bridge scans the hash table and purges all entries more than a few minutes old. In this way, if a
+computer is unplugged from its LAN, moved around the building, and plugged in again somewhere else, within a few minutes it will be
+back in normal operation, without any manual intervention. This algorithm also means that if a machine is quiet for a few minutes,
+(entry gets deleted) any traffic sent to it will have to be flooded until it next sends a frame itself.
+
+The routing procedure for an incoming frame depends on the port it arrives on (the source port) and the address to which it is
+destined (the destination address). The procedure is as follows:
+    1. If the port for the destination address is the same as the source port, discard the frame.
+    2. If the port for the destination address and the source port are different, forward the frame on to the destination port.
+    3. If the destination port is unknown, use flooding and send the frame on all ports except the source port.
+You might wonder whether the first case can occur with point-to-point links. The answer is that it can occur if hubs are used to
+connect a group of computers to a bridge.
+
+--- SPANNING-TREE BRIDGES
+To increase reliability, redundant links can be used between bridges. As an example there can be two links in parallel between a
+pair of bridges (2 link 2 ports on each bridge). This design ensures that if one link is cut, the network will not be partitioned
+into two sets of computers that cannot talk to each other. However, this redundancy introduces some additional problems because it
+creates LOOPS in the topology. An example of these problems can be seen next. 
+
+If A sends a frame to a previously unobserved destination, in the current topology, each bridge follows the normal rule for handling 
+unknown destinations, which is to flood the frame. Call the frame from A that reaches bridge B1 frame F_0. The bridge sends copies
+of this frame out all of its other ports. We will only consider the bridge ports that connect B1 to B2 (though the frame will be 
+sent out the other ports, too). Since there are two links from B1 to B2, TWO copies of the frame will reach B2. Call these copies 
+F_1 and F_2.
+
+Shortly thereafter, bridge B2 receives these frames. However, it does not (and cannot (protocol violation)) know that they are 
+copies of the same frame, rather than two different frames sent one after the other. So bridge B2 takes F_1 and sends copies of
+it out all the other ports, and it also takes F_2 and sends copies of it out all the other ports. This produces frames F_3 and F_4
+that are sent along the two links back to B1. Bridge B1 then sees two new frames with unknown destinations and copies them again.
+This CYCLE goes on forever. 
+
+Ogni bridge non ha modo di capire che i frame che riceve su PORTE DIVERSE sono copie dello stesso  frame, quindi li tratta come
+nuovi frame separati e li inoltra nuovamente (nel caso di un solo link, il frame che torna indietro da B2 è riconoscibile come copia
+da B1 in quanto ritorna dalla stessa porta in cui è uscito). La situazione è grave non solo per il ciclo infinito, nel caso di due
+link il link di F1 scarta F3 ma non F4 e il link di F2 scarta F4 ma non F3, questo crea un loop che inoltre raddopia ogni volta il
+numero di frame.
+
+The solution to this difficulty is for the bridges to communicate with each other and overlay the actual topology with a spanning
+tree that reaches every bridge. In effect, some potential connections between bridges are ignored in the interest of constructing 
+a fictitious loop-free topology that is a subset of the actual topology.
+
+For example, in Fig. 4-36 we see five bridges that are interconnected and also have stations connected to them. Each station 
+connects to only one bridge. There are some redundant connections between the bridges so that frames will be forwarded in loops
+if all of the links are used. This topology can be thought of as a graph in which the bridges are the nodes and the point-to-point
+links are the edges(archi). The graph can be reduced to a spanning tree, which has no cycles by definition, by dropping the redundant
+links shown as dashed lines in Fig. 4-36. Using this spanning tree, there is exactly ONE PATH from every station to every other
+station. Once the bridges have agreed on the spanning tree, all forwarding between stations follows the spanning tree. Since there
+is a unique path from each source to each destination, loops are impossible.
+
+To build the spanning tree, the bridges run a distributed algorithm. Each bridge periodically broadcasts a configuration message 
+out all of its ports to its neighbors and processes the messages it receives from other bridges, as described next. These messages
+are NOT FORWARDED, since their purpose is to build the tree, which can then be used for forwarding.
+
+The bridges must first choose one bridge to be the ROOT of the spanning tree. To make this choice, they each include an identifier
+based on their MAC address in the configuration message, as well as the identifier of the bridge they believe to be the root.
+MAC addresses are installed by the manufacturer and guaranteed to be unique worldwide, which makes these identifiers convenient and
+unique. The bridges choose the bridge with the lowest identifier to be the root. After enough messages have been exchanged to
+spread the news, all bridges will agree on which bridge is the root.
+
+Next, a tree of SHORTEST PATHS from the root to every bridge is constructed. In Fig. 4-36, bridges B2 and B3 can each be reached
+from bridge B1 directly, in one hop that is a shortest path. Bridge B4 can be reached in two hops, via either B2 or B3. To break
+this tie, the path via the bridge with the lowest identifier is chosen, so B4 is reached via B2. Bridge B5 can be reached in two
+hops via B3. To find these shortest paths, bridges include the distance from the root in their configuration messages. Each bridge
+remembers the shortest path it finds to the root. The bridges then turn off ports that are not part of the shortest path. 
+
+Although the tree spans all the bridges, not all the links (or even bridges) are necessarily present in the tree. This happens
+because turning off the ports prunes some links from the network to prevent loops. Even after the spanning tree has been established,
+the algorithm continues to run during normal operation to automatically detect topology changes and update the tree. (riabilita 
+anche i link che erano stati disattivati in caso di guasto all'altro).
+
+The algorithm for automatically constructing the spanning tree was invented by Radia Perlman. Her job was to solve the problem of
+joining LANs without loops. She was given a week to do it, but she came up with the idea for the spanning tree algorithm in a day.
+Fortunately, this left her enough time to write it as a poem (Perlman, 1985):
+
+    "I think that I shall never see
+    A graph more lovely than a tree.
+    A tree whose crucial property
+    Is loop-free connectivity.
+    A tree which must be sure to span.
+    So packets can reach every LAN.
+    First the Root must be selected
+    By ID it is elected.
+    Least-cost paths from Root are traced
+    In the tree these paths are placed.
+    A mesh is made by folks like me
+    Then bridges find a spanning tree."

@@ -1,0 +1,74 @@
+So far in this book, we have looked at a variety of ways to get frames and packets from one computer to another. We have mentioned
+repeaters, hubs, bridges, switches, routers, and gateways. All of these devices are in common use, but they all differ in subtle and
+not-so-subtle ways. Since there are so many of them, it is probably worth taking a look at them together to see what the similarities
+and differences are.
+
+The key to understanding these devices is to realize that they operate in different layers. The layer matters because different
+devices use different pieces of information to decide how to switch. In a typical scenario, the user generates some data to be sent
+to a remote machine. Those data are passed to the transport layer, which then adds a header (for example, a TCP header) and passes
+the resulting unit down to the network layer. The network layer adds its own header to form a network layer packet (e.g., an IP
+packet).Then, the packet goes to the data link layer, which adds its own header and checksum (CRC) and gives the resulting frame to
+the physical layer for transmission, for example, over a LAN.
+
+Now let us look at the switching devices and see how they relate to the packets and frames. At the bottom, in the physical layer,
+we find the REPEATERS. These are analog devices that work with signals on the cables to which they are connected. A signal appearing
+on one cable is cleaned up, amplified, and put out on another cable. Repeaters do not understand frames, packets, or headers. They
+understand the symbols that encode bits as volts. Classic Ethernet, for example, was designed to allow four repeaters that would
+boost the signal to extend the maximum cable length from 500 meters to 2500 meters. 
+
+Next we come to the HUBS. A hub has a number of input lines that it joins electrically. Frames arriving on any of the lines are sent
+out on all the others. If two frames arrive at the same time, they will collide, just as on a coaxial cable (una huB è logicamente
+uguale ad un lungo cavo condiviso dalle stazioni, serve solo a semplificare il wiring e notare più facilmente danni ad esso). All
+the lines coming into a hub must operate at the same speed. Hubs differ from repeaters in that they do not (usually) amplify the
+incoming signals and are designed for multiple input lines, but the differences are slight. Like repeaters, hubs are physical layer
+devices that do not examine the link layer addresses or use them in any way.
+
+Now let us move up to the data link layer, where we find BRIDGES and SWITCHES. We just studied bridges at some length. A bridge
+connects two or more LANs. Like a hub, a modern bridge has multiple ports, usually enough for 4 to 48 input lines of a certain type.
+Unlike in a hub, each port is isolated to be its own collision domain; if the port has a full-duplex point-to-point line, the
+CSMA/CD algorithm is NOT needed. When a frame arrives, the bridge extracts the destination address from the frame header and looks
+it up in a table to see where to send the frame. For Ethernet, this address is the 48-bit destination address (MAC). The bridge only
+outputs the frame on the port where it is needed and can forward multiple frames at the same time.
+
+Bridges offer much better performance than hubs, and the isolation between bridge ports also means that the input lines may run at 
+different speeds, possibly even with different network types. A common example is a bridge with ports that connect to 10, 100, and
+1000 Mbps Ethernet. Buffering within the bridge is needed to accept a frame on one port and transmit the frame out on a different
+port. If frames come in faster than they can be retransmitted, the bridge may run out of buffer space and have to start discarding
+frames. For example, if a gigabit Ethernet is pouring bits into a 10-Mbps Ethernet at top speed, the bridge will have to buffer them,
+hoping not to run out of memory. This problem still exists even if all the ports run at the same speed because more than one port may
+be sending frames to a given destination port.
+
+Bridges were originally intended to be able to join different kinds of LANs, for example, an Ethernet and a Token Ring LAN. However,
+this never worked well because of differences between the LANs. Two other areas where LANs can differ are security and quality of
+service. Some LANs have link-layer encryption or have quality of service features such as priorities, for example 802.11 does, and
+Ethernet does not. Consequently, when a frame must travel between these LANs, the security or quality of service expected by the
+sender may not be able to be provided. For all of these reasons, modern bridges usually work for one network type, and routers,
+which we will come to soon, are used instead to join networks of different types. 
+
+Switches are modern bridges by another name. The differences are more to do with marketing than technical issues, but there are a
+few points worth knowing. Bridges were developed when classic Ethernet was in use, so they tend to join relatively few LANs and thus
+have relatively few ports. The term ‘‘switch’’ is more popular nowadays. Also, modern installations all use point-to-point links,
+such as twisted-pair cables, so individual computers plug directly into a switch and thus the switch will tend to have many ports.
+Finally, ‘‘switch’’ is also used as a general term. With a bridge, the functionality is clear. On the other hand, a switch may
+refer to an Ethernet switch or a completely different kind of device that makes for- warding decisions, such as a telephone switch.
+
+So far, we have seen repeaters and hubs, which are actually quite similar, as well as bridges and switches, which are even more
+similar to each other. Now we move up to routers, which are different from all of the above. When a packet comes into a router, the
+frame header and trailer are stripped off and the packet located in the frame’s payload field is passed to the routing software. This
+software uses the packet header to choose an output line. For an IP packet, the packet header will contain a 32-bit (IPv4) or
+128-bit (IPv6) address, but NOT a 48-bit IEEE 802 address. The routing software does not see the frame addresses and does not even
+know whether the packet came in on a LAN or a point-to-point line.
+
+//RICORDA
+The device that makes a connection between two or more networks and provides the necessary translation, both in terms of hardware and
+software, is a gateway. Gateways are distinguished by the layer at which they operate in the protocol hierarchy. Per esempio un router
+è un Gateway dato che collega reti locali di tipo diverso.
+
+Up another layer, we find TRANSPORT GATEWAYS. These connect two computers that use different connection-oriented transport protocols.
+For example, suppose a computer using the connection-oriented TCP/IP protocol needs to talk to a computer using a different 
+connection-oriented transport protocol called SCTP. The transport gateway can copy the packets from one connection to the other,
+reformatting them as need be.
+
+Finally, application gateways understand the format and contents of the data and can translate messages from one format to another.
+An email gateway could translate Internet messages into SMS messages for mobile phones, for example. Like ‘‘switch,’’ ‘‘gateway’’ is
+somewhat of a general term. It refers to a forwarding process that runs at a high layer.
