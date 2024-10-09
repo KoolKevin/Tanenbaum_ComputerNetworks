@@ -1,0 +1,12 @@
+The network layer is concerned with getting packets from the source all the way to the destination. Getting to the destination may require making many hops at intermediate
+routers along the way. This function clearly contrasts with that of the data link layer, which has the more modest goal of just moving frames from one end of a (virtual)
+‘‘wire’’ to the other. Thus, the network layer is the lowest layer that deals with END-TO-END TRANSMISSION.
+
+1)To achieve its goals, the network layer must learn about the TOPOLOGY of the network (i.e., the set of all routers and links) and compute appropriate paths through it, even
+for large networks. 2)It must also take care when choosing routes to avoid overloading some of the communication lines and routers while leaving others idle. 3)Finally, when
+the source and destination are in different independently operated networks, sometimes called autonomous systems, new challenges arise, such as coordinating traffic flows
+across multiple networks and managing network utilization. These problems are typically handled at the network layer.
+
+Network operators are often tasked with dealing with these challenges manually, through low-level configuration. More recently, however, the advent of software-defined
+networking and programmable hardware has made it possible to configure the network layer from higher-level software programs, and even to redefine the functions of the
+network layer entirely.

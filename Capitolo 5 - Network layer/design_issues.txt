@@ -1,0 +1,96 @@
+In the following sections, we will give an introduction to some of the issues that the designers of the network layer must grapple with. These issues include the
+service provided to the transport layer and the internal design of the network.
+
+- STORE-AND-FORWARD PACKET SWITCHING
+Before starting to explain the details of the network layer, it is worth restating the context in which the network layer protocols operate. The major components of the
+network are the ISP’s equipment (routers, switches, and middleboxes connected by transmission lines), and the customers’ equipment. As an example Host H1 is directly
+connected to one of the ISP’s routers, A, perhaps as a home computer that is plugged into a DSL modem. In contrast, H2 is on a LAN, which might be an office Ethernet, with a
+router, F, owned and operated by the customer. This router has a leased line to the ISP’s equipment.
+
+This equipment is used as follows. A host with a packet to send transmits it to the nearest router, either on its own LAN or over a point-to-point link to the ISP. The packet
+is stored there until it has fully arrived and the link has finished its processing by verifying the checksum. Then it is forwarded to the next router along the path until it
+reaches the destination host, where it is delivered. This mechanism is store-and-forward packet switching.
+
+- SERVICES PROVIDED TO THE TRANSPORT LAYER
+What kind of services does the network layer provide to the transport layer? The services need to be carefully designed with the following goals in mind:
+    1. The services should be independent of the router technology.
+    2. The transport layer should be shielded from the number, type, and topology of the routers present.
+    3. The network addresses made available to the transport layer should use a uniform numbering plan, even across LANs and WANs. 
+
+Given these goals, the designers of the network layer have a lot of freedom in writing detailed specifications of the services to be offered to the transport layer. This
+freedom often degenerates into a raging battle between two warring factions. The discussion centers on whether the network layer should provide CONNECTION-ORIENTED
+service or CONNECTIONLESS service.
+
+One camp (represented by the Internet community) argues that the routers’ job is moving packets around and nothing else. In this view (based on 40 years of experience with
+a real computer network), the network is inherently unreliable, no matter how it is designed. Therefore, the hosts should accept this fact and do error control (i.e., error
+detection and correction) and flow control themselves. This viewpoint leads to the conclusion that the network service should be connectionless, with primitives SEND PACKET 
+and RECEIVE PACKET and little else. In particular, no packet ordering and flow control should be done, because the hosts are going to do that anyway and there is usually
+little to be gained by doing it twice. Furthermore, each packet must carry the full destination address, because each packet sent is carried independently of its
+predecessors, if any.
+
+The other camp (represented by the telephone companies) argues that the net- work should provide a reliable, connection-oriented service. They claim that 100 years of
+successful experience with the worldwide telephone system is an excellent guide. In this view, quality of service is the dominant factor, and without connections in the
+network, quality of service is very difficult to achieve, especially for real-time traffic such as voice and video. 
+
+In generale ha vinto il connection-less argument con Internet e IP come testimoni. However, the Internet is evolving connection-oriented features as quality of service
+becomes more important. Two examples of connection-oriented technologies are multiprotocol label switching, which we will describe in this chapter, and VLANs, which we
+saw in Chap. 4. Both technologies are widely used. 
+
+Having looked at the two classes of service the network layer can provide to its users, it is time to see how this layer works inside. If connectionless service is offered,
+packets are injected into the network individually and routed independently of each other. No advance setup is needed. In this context, the packets are frequently called
+datagrams (in analogy with telegrams) and the network is called a datagram network. If connection-oriented service is used, a path from the source router all the way to the
+destination router must be established before any data packets can be sent. This connection is called a VC (Virtual Circuit), in analogy with the physical circuits set up by
+the (old) telephone system, and the network is called a virtual-circuit network.
+
+- IMPLEMENTATION OF CONNECTIONLESS SERVICE
+Let us now see how a datagram network works. Suppose that the process P1 has a long message for P2. It hands the message to the transport layer, with instructions to deliver
+it to process P2 on host H2. The transport layer code runs on H1, typically within the operating system. It prepends a transport header to the front of the message and hands
+the result to the network layer. Let us assume for this example that the message is four times longer than the maximum packet size, so the network layer has to break it into
+four packets, 1, 2, 3, and 4, and send each of them in turn to router A using some point-to-point protocol, for example, PPP.
+
+At this point the ISP takes over. Every router has an internal table telling it where to send packets for each of the possible destinations. Each table entry is a pair
+consisting of a destination and the outgoing line to use for that destination. Only directly connected lines can be used. For example if A has only two outgoing lines,
+to B and to C, every incoming packet must be sent to one of these routers, even if the ultimate destination is to some other router.
+
+At A, packets 1, 2, and 3 are stored briefly, having arrived on the incoming link and had their checksums verified. Then each packet is forwarded according to A’s table,
+onto the outgoing link to C within a new frame. Packet 1 is then forwarded to E and then to F. When it gets to F, it is sent within a frame over the LAN to H2. Packets
+2 and 3 follow the same route.
+
+However, something different happens to packet 4. When it gets to A it is sent to router B, even though it is also destined for F. For some reason, A decided to
+send packet 4 via a different route than that of the first three packets. Perhaps it has learned of a traffic jam somewhere along the ACE path and updated its routing
+table. The algorithm that manages the tables and makes the routing decisions is called the routing algorithm. Routing algorithms are one of the main topics in this chapter.
+
+IP, which is the basis for the entire Internet, is the dominant example of a connectionless network service. Each packet carries a destination IP address that routers use to
+individually forward each packet. The addresses are 32 bits in IPv4 packets and 128 bits in IPv6 packets.
+
+- IMPLEMENTATION OF CONNECTION-ORIENTED SERVICE
+For connection-oriented service, we need to have a virtual-circuit network. The idea behind virtual circuits is to avoid having to choose a new route for every packet sent,
+as in connectionless-services. Instead, when a connection is established, a route from the source machine to the destination machine is chosen as part of the connection setup
+and STORED in tables INSIED the ROUTERS. That route is used for all traffic flowing over the connection, exactly the same way that the telephone system works. When the 
+connection is released, the virtual circuit is also terminated. With connection-oriented service, each packet carries an identifier telling which virtual circuit it belongs.
+
+As an example, consider the situation illustrated, host H1 has established connection 1 with host H2. This connection is remembered as the first entry in each of the routing
+tables. The first line of A’s table says that if a packet bearing connection identifier 1 comes in from H1, it is to be sent to router C and given connection identifier 1.
+Similarly, the first entry at C routes the packet to E, also with connection identifier 1.
+
+Now let us consider what happens if H3 also wants to establish a connection to H2. It chooses connection identifier 1 (because it is initiating the connection and this is
+ITS only connection) and tells the network to establish the virtual circuit. This leads to the second row in the tables. Please note that we have a conflict here because
+although A can easily distinguish connection 1 packets from H1 from con- nection 1 packets from H3, C cannot do this. For this reason, A assigns a different connection
+identifier to the outgoing traffic for the second connection. Avoiding conflicts of this kind is why routers need the ability to replace connection identifiers in outgoing
+packets. 
+
+An example of a connection-oriented network service is MPLS (MultiProtocol Label Switching). It is used within ISP networks in the Internet, with IP packets wrapped in an
+MPLS header having a 20-bit connection identifier or label. MPLS is often hidden from customers, with the ISP establishing long-term connections for large amounts of traffic,
+but it is increasingly being used to help when quality of service is important but also with other ISP traffic management tasks.
+
+- COMPARISON OF VIRTUAL CIRCUIT AND DATAGRAM NETWORKS
+
+Issue                       Datagram network                                                Virtual-circuit network
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Circuit setup               Not needed                                                      Required
+Addressing                  Each packet contains the full source and destination address    Each packet contains a short VC number
+State information           Routers do not hold state information about connections         Each VC requires router table space per connection
+Routing                     Each packet is routed independently                             Route chosen when VC is set up; all packets follow it
+Effect of router failures   None, except for packets lost during the crash                  All VCs that passed through the failed router are terminated
+Quality of service          Difficult                                                       Easy if enough resources can be allocated in advance for each VC
+Congestion control          Difficult                                                       Easy if enough resources can be allocated in advance for each VC

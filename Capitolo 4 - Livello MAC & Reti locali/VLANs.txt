@@ -77,3 +77,10 @@ In our example, the frame is only sent from bridge B1 to bridge B2 because there
 Looking at the white VLAN, we can see that the bridge B2 port that connects to bridge B1 is not labeled W. This means that a frame on the
 white VLAN will not be forwarded from bridge B2 to bridge B1. This behavior is correct because no stations on the white VLAN are
 connected to B1.
+
+Before leaving the subject of VLAN routing, it is worth making one last observation. Many people in the Internet and Ethernet worlds are 
+fanatically in favor of connectionless networking and violently opposed to anything smacking of connections in the data link or network layers.
+Yet VLANs introduce something that is surprisingly similar to a connection. To use VLANs properly, each frame carries a new special identifier 
+that is used as an index into a table inside the switch to look up where the frame is supposed to be sent. That is precisely what happens in
+connection-oriented networks. In connectionless networks, it is the destination address that is used for routing, not some kind of connection
+identifier.

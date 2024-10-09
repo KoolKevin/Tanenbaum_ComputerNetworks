@@ -1,0 +1,83 @@
+The main function of the network layer is ROUTING packets from the source machine to the destination machine. In this section, we discuss how the network layer achieves 
+this function within a single administrative domain or autonomous system. In most networks, packets will require multiple hops to make the journey. The only notable
+exception is for broadcast networks, but even here routing is an issue if the source and destination are not on the same network segment. The algorithms that choose the
+routes and the data structures that they use are a major area of network layer design.
+
+--- ROUTING ALGORITHMS
+The routing algorithm is that part of the network layer software responsible for deciding which output line an incoming packet should be transmitted on. If the
+network uses datagrams internally, the routing decision must be made anew for every arriving data packet since the best route may have changed since last time. If
+the network uses virtual circuits internally, routing decisions are made only when a new virtual circuit is being set up. Thereafter, data packets just follow the already
+established route. The latter case is sometimes called session routing because a route remains in force for an entire session (e.g., while logged in over a VPN).
+
+It is sometimes useful to make a distinction between routing, which is making the decision which routes to use, and forwarding, which is what happens when a packet arrives.
+One can think of a router as having two processes inside it. One of them handles each packet as it arrives, looking up the outgoing line to use for it in the routing tables.
+This process is forwarding. The other process is responsible for filling in and updating the routing tables. That is where the routing algorithm comes into play.
+
+ROUTING ALGORITHMS | PROPRIETà DESIDERABILI
+Regardless of whether routes are chosen independently for each packet sent or only when new connections are established, certain properties are desirable in a routing
+algorithm:
+    - correctness
+    - simplicity
+    - robustness
+    - stability,
+    - fairness
+    - efficiency
+Correctness and simplicity hardly require comment, but the need for robustness may be less obvious at first. Once a major network comes on the air, it may be expected to
+run continuously for years without system-wide failures. During that period there will be hardware and software failures of all kinds. Hosts, routers, and lines will fail
+repeatedly, and the topology will change many times. The routing algorithm should be able to cope with changes in the topology and traffic without requiring all jobs in all
+hosts to be aborted. Imagine the havoc if the network needed to be rebooted every time some router crashed.
+
+Stability is also an important goal for the routing algorithm. There exist routing algorithms that never converge to a fixed set of paths, no matter how long they run.
+A stable algorithm reaches equilibrium and stays there. It should converge quickly too, since communication may be disrupted until the routing algorithm has reached
+equilibrium.
+
+Fairness and efficiency may sound obvious, surely no reasonable person would oppose them, but as it turns out, they are often contradictory goals. As a simple example of
+this conflict, look at Fig. 5-5. Suppose that there is enough traffic between A and A', between B and B', and between C and C' to saturate the horizontal links. To maximize
+the total flow, the X to X' traffic should be shut off altogether. Unfortunately, X and X' may not see it that way. Evidently, some compromise between global efficiency and
+fairness to individual connections is needed. 
+
+Before we can even attempt to find trade-offs between fairness and efficiency, we must decide what it is we seek to optimize. Minimizing the mean packet delay is an obvious
+candidate to send traffic through the network effectively, but so is maximizing total network throughput. Furthermore, these two goals are also in conflict, since operating
+any queueing system near capacity implies a long queueing delay. As a compromise, many networks attempt to minimize the distance a packet must travel, or alternatively,
+simply reduce the number of hops a packet must make.
+
+ROUTING ALGORITHMS | PROPRIETà CLASSIFICAZIONE
+Routing algorithms can be grouped into two major classes: nonadaptive and adaptive.
+
+Nonadaptive algorithms do not base their routing decisions on any measurements or estimates of the current topology and traffic. Instead, the choice of the route to use
+to get from I to J (for all I and J) is computed in advance, offline, and downloaded to the routers when the network is booted. This procedure is sometimes called STATIC
+routing. Because it does not respond to failures, static routing is mostly useful for situations in which the routing choice is clear.
+
+Adaptive algorithms, in contrast, change their routing decisions to reflect changes in the topology, and sometimes changes in the traffic as well. These DYNAMIC routing
+algorithms differ in:
+    - where they get their information (e.g., locally, from adjacent routers, or from all routers)
+    - when they change the routes (e.g., when the topology changes, or every delta_T seconds as the load changes)
+    - and what metric is used for optimization (e.g., distance, number of hops, or estimated transit time). 
+
+PREMESSA: All the routing algorithms we describe here make decisions based on the TOPOLOGY; we defer the possibility of decisions based on the TRAFFIC to Sec. 5.3.
+
+--- OPTIMALITY PRINCIPLE
+Before we get into specific algorithms, it may be helpful to note that one can make a general statement about optimal routes without regard to network topology or traffic.
+This statement is known as the optimality principle. It states that if router J is on the optimal path from router I to router K, then the optimal path from J to K also
+falls along the same route.
+
+As a direct consequence of the optimality principle, we can see that the set of optimal routes from all sources to a given destination FORM A TREE rooted at the destination.
+Such a tree is called a SINK TREE. To decide which route is optimal we'll use the number of hops as the distance metric.
+
+The goal of all routing algorithms is to discover and use the sink trees for all routers.  Per ogni router nella rete, gli algoritmi di routing cercano di costruire un
+sink tree che rappresenti il percorso ottimale da tutti gli altri router verso quel determinato router.
+
+Esempio: Immagina una rete con vari router connessi tra loro. Se il router A vuole calcolare il percorso ottimale verso il router D, l'algoritmo di routing costruisce un
+sink tree con D come radice e tutti i possibili percorsi dai vari router (incluso A) che arrivano a D. La stessa cosa viene fatta per tutti gli altri router, quindi ogni
+router diventa a sua volta la radice di un sink tree che collega in modo ottimale tutti gli altri nodi della rete a lui. In questo modo tutti router della rete acquisiscono 
+conoscenza dei percorsi ottimi verso ogni altro router della rete.
+
+Note that a sink tree is not necessarily unique; other trees with the same path lengths may exist. If we allow all of the possible paths to be chosen, the tree becomes a
+more general structure called a DAG (Directed Acyclic Graph). DAGs have no loops. We will use sink trees as a convenient shorthand for both cases. Both cases also depend
+on the technical assumption that the paths do not interfere with each other so, for example, a traffic jam on one path will not cause another path to divert.
+
+Since a sink tree is indeed a tree, it does not contain any loops, so each packet will be delivered within a finite and bounded number of hops. In practice, life is not
+quite this easy. Links and routers can go down and come back up during oper- ation, so different routers may have different ideas about the current topology. Also, we have
+quietly finessed the issue of whether each router has to individually acquire the information on which to base its sink tree computation or whether this information is
+collected by some other means. We will come back to these issues shortly. Nevertheless, the optimality principle and the sink tree provide a benchmark against which other
+routing algorithms can be measured.

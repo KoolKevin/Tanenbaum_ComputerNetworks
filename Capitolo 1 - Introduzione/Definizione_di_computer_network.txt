@@ -10,7 +10,7 @@ NB: dopo aggiunge questo dettaglio:  "collection of computers interconnected by 
 
 DIFFERENZE CON SISTEMI DISTRIBUITI
 There is considerable confusion in the literature between a computer network and a distributed system. The key distinction is that
-in a distributed system, a collection of independent computers appears to its users as a SINGLE COHEREN SYSTEM. Usually, it has a single
+in a distributed system, a collection of independent computers appears to its users as a SINGLE COHERENT SYSTEM. Usually, it has a single
 model or paradigm that it presents to the users. Often a layer of software on top of the operating system, called middleware, is
 responsible for implementing this model.
 
